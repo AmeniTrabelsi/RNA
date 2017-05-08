@@ -1,0 +1,5 @@
+*.pdf
+.idea/
+input_data/
+paper/
+.DS_Store
