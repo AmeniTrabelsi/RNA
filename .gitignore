@@ -1,5 +1,5 @@
 *.pdf
 .idea/
-input_data/
+input_data/*.fa
 paper/
 .DS_Store

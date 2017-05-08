@@ -1,5 +1,5 @@
 # set the file name
-fname = "all-trnas.fa"
+fname = "input_data/all-trnas.fa"
 
 print "read data from file"
 array = []  # odd lines store info, even lines store sequence
