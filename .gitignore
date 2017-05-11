@@ -3,3 +3,5 @@
 input_data/*.fa
 paper/
 .DS_Store
+*.pyc
+*/*.pyc
