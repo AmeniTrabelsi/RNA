@@ -17,13 +17,13 @@ valuesTranspose = np.ndarray.tolist(np.array(myDict.values()).T)
 ##  after get your myDict ready, now you can write it into db
 placeholders = ", ".join(["%s"] * len(myDict))
 columns = ", ".join(myDict.keys())
-myQuery = "INSERT INTO Test1 ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO RawRNA ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb");
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS Test1")
-    cur.execute("CREATE TABLE Test1(RNAID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS RawRNA")
+    cur.execute("CREATE TABLE RawRNA(RNAID INT PRIMARY KEY AUTO_INCREMENT, \
                  idx VARCHAR(255), \
                  Name VARCHAR(255), \
                  Source VARCHAR(255), \
