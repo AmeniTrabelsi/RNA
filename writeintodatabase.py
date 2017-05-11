@@ -24,7 +24,6 @@ with con:
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS RawRNA")
     cur.execute("CREATE TABLE RawRNA(RNAID INT PRIMARY KEY AUTO_INCREMENT, \
-                 idx VARCHAR(255), \
                  Name VARCHAR(255), \
                  Source VARCHAR(255), \
                  Sequence TEXT)")

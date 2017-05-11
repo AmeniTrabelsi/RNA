@@ -19,17 +19,14 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
                     array[-1] += line
 
     # define the dict variable
-    rna_data = {"idx": [], "Name": [], "Source": [], "Sequence": []}
+    rna_data = {"Name": [], "Source": [], "Sequence": []}
     print "get DNA info from array read from file"
-    count = 0
     for line in array:
         line_split = line.split(" ")
         if 'N' not in line_split[-1] and 'K' not in line_split[-1]:
-            rna_data["idx"].append(count)
             rna_data["Name"].append(line_split[0].split("-")[-1])
             rna_data["Source"].append(line_split[0].split(".")[0][1:])
             rna_data["Sequence"].append(line_split[-1])
-            count += 1
 
     print "map from DNA to RNA"
     dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C"}
