@@ -9,7 +9,9 @@ iso_map = {'C': [12.0, 13.0033548378],
            'O': [15.99491461956, 16.99913170, 17.9991610],
            'N': [14.0030740048, 15.0001088982],
            'S': [31.972071, 32.97145876, 33.96786690, 35.96708076],
-           'P': [30.97376163]}
+           'P': [30.97376163],
+           'Na': [22.9897692809],
+           'K': [38.96370668, 39.96399848, 40.96182576]}
 
 # Algorithm
 # Create a table called “Fragments”
@@ -22,7 +24,7 @@ iso_map = {'C': [12.0, 13.0033548378],
 # Write “fragments” into “Fragments” table in db
 
 # get data from RawRNA Table
-rawRNA = []  # fetch from RawRNA db, output values are ((RNAID, Name, Source, Sequence))
+rawRNA = []  # fetch from RawRNA table, output values are ((RNAID, Name, Source, Sequence))
 head = []
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
