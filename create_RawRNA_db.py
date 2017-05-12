@@ -14,7 +14,7 @@ placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
 myQuery = "INSERT INTO RawRNA ( %s ) VALUES ( %s )" % (columns, placeholders)
 
-con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb");
+con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS RawRNA")

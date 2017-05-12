@@ -16,7 +16,7 @@ RNA_A = {'C': 5, 'H': 5, 'N': 5}
 RNA_U = {'C': 4, 'H': 4, 'N': 2, 'O': 2}
 RNA_G = {'C': 5, 'H': 5, 'N': 5, 'O': 1}
 RNA_C = {'C': 4, 'H': 5, 'N': 3, 'O': 1}
-RNA_constant = {'C': 5, 'H': 7, 'O': 6, 'P': 1}
+RNA_constant = {'C': 5, 'H': 8, 'O': 6, 'P': 1}
 mz_A = 0
 for key, value in RNA_A.items():
     mz_A += value * iso_map[key][0]
@@ -87,9 +87,9 @@ for idx, line in enumerate(rawRNA):
         total_no = len(temp_frag)
         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
         if i == 0:
-            temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0]
+            temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0] + iso_map['H'][0]
         elif i == total_no-1:
-            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+            temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
         else:
             temp_mz = common_mz
         all_fragments.append([rna_name, rna_source, temp_frag, temp_mz, rna_id])

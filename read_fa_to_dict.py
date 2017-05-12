@@ -25,14 +25,14 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
     print "get DNA info from array read from file"
     for line in array:
         line_split = line.split(" ")
-        if 'N' not in line_split[-1] and 'K' not in line_split[-1]:
-            name = line_split[0].split("-")[-1]
-            source = line_split[0].split(".")[0][1:]
-            sequence = line_split[-1]
-            rna_data.append([name, source, sequence])
+        #if 'N' not in line_split[-1] and 'K' not in line_split[-1]:
+        name = line_split[0].split("-")[-1]
+        source = line_split[0].split(".")[0][1:]
+        sequence = line_split[-1]
+        rna_data.append([name, source, sequence])
 
     print "map from DNA to RNA"
-    dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C"}
+    dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C", "K": "K", "N": "N"}
     for id, dna_data in enumerate(rna_data):
         dna_seq = dna_data[-1]
         rna_seq = []
