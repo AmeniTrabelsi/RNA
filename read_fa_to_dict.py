@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+
 def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
     print "read data from file"
     array = []  # odd lines store info, even lines store sequence
@@ -18,24 +19,26 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
                 else:
                     array[-1] += line
 
-    # define the dict variable
-    rna_data = {"Name": [], "Source": [], "Sequence": []}
+    # define the head variable
+    rna_head = ["Name", "Source", "Sequence"]
+    rna_data = []  # [[name1, source1, seq1], [name2, source2, seq2], ...]
     print "get DNA info from array read from file"
     for line in array:
         line_split = line.split(" ")
         if 'N' not in line_split[-1] and 'K' not in line_split[-1]:
-            rna_data["Name"].append(line_split[0].split("-")[-1])
-            rna_data["Source"].append(line_split[0].split(".")[0][1:])
-            rna_data["Sequence"].append(line_split[-1])
+            name = line_split[0].split("-")[-1]
+            source = line_split[0].split(".")[0][1:]
+            sequence = line_split[-1]
+            rna_data.append([name, source, sequence])
 
     print "map from DNA to RNA"
     dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C"}
-    for id, dna_seq in enumerate(rna_data["Sequence"]):
+    for id, dna_data in enumerate(rna_data):
+        dna_seq = dna_data[-1]
         rna_seq = []
         for dna in dna_seq:
             rna_seq.append(dna_rna_map[dna])
-        rna_data["Sequence"][id] = "".join(rna_seq)
-
+        rna_data[id][-1] = "".join(rna_seq)
 
     print "Finish get rna data from file"
-    return rna_data
+    return rna_head, rna_data
