@@ -9,6 +9,7 @@ def replace(seq):
 
 if __name__ == '__main__':
     seq = "GNK"
+    # output should be ["GAA", "GAC", "GUA", "GUC", "GGA", "GGC", "GCA", "GCC"]
     replaced = replace(seq)
     for r in replaced:
         print r
