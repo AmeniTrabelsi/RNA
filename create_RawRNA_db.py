@@ -18,7 +18,7 @@ con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
     cur.execute("DROP TABLE IF EXISTS RawRNA")
-    cur.execute("CREATE TABLE RawRNA(RNAID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("CREATE TABLE RawRNA(RawRNAid INT PRIMARY KEY AUTO_INCREMENT, \
                  Name VARCHAR(255), \
                  Source VARCHAR(255), \
                  Sequence TEXT)")

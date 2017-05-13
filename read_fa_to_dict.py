@@ -33,12 +33,12 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
 
     print "map from DNA to RNA"
     dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C", "K": "K", "N": "N"}
-    for id, dna_data in enumerate(rna_data):
+    for idx, dna_data in enumerate(rna_data):
         dna_seq = dna_data[-1]
         rna_seq = []
         for dna in dna_seq:
             rna_seq.append(dna_rna_map[dna])
-        rna_data[id][-1] = "".join(rna_seq)
+        rna_data[idx][-1] = "".join(rna_seq)
 
     print "Finish get rna data from file"
     return rna_head, rna_data
