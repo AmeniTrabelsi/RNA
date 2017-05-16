@@ -10,17 +10,17 @@ def replace(seq):
             if each_letter in rep_map.keys():
                 total_seq = rep_map[each_letter]
             else:
-                total_seq = "".join(each_letter)
+                total_seq = each_letter
         else:
             temp1 = []
             if each_letter in rep_map.keys():
                 for temp_seq in total_seq:
                     for temp_S in rep_map[each_letter]:
-                        temp1.append("".join([temp_seq, temp_S]))
+                        temp1.append(temp_seq + temp_S)
             else:
                 for temp_seq in total_seq:
-                    temp1.append("".join([temp_seq, each_letter]))
-            total_seq = copy.copy(temp1)
+                    temp1.append(temp_seq + each_letter)
+            total_seq = temp1
     return total_seq
 
 
