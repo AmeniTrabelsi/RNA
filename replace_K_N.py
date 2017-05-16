@@ -1,5 +1,4 @@
 """this function is to replace K and N in seq with one of A U G C"""
-import copy
 
 
 def replace(seq):
