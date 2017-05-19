@@ -3,6 +3,7 @@
 
 import MySQLdb as mdb
 import math
+# import pickle
 
 iso_map = {'C': [12.0, 13.0033548378],
            'H': [1.00782503207, 2.0141017778],
@@ -36,7 +37,7 @@ for key, value in RNA_constant.items():
 # Algorithm
 # Create a table called “Fragments”
 # Compute the dictionary called “fragments” storing the related table information
-#   Fields: FragmentID, Name, Source, Fragment, MZ, RNAID
+#   Fields: FragmentID, Name, Source, Fragment, MZ, RNAID, RawRNAid
 #   Get all data from table “RNA” into variable rawRNA
 #   For each rna sequence, decompose into multiple fragments
 #       Separate by “separate_by = ‘G’” as default
@@ -54,8 +55,8 @@ with con:
 
 print "RNA table head is {0}".format(raw_RNA_head)
 print "For each rna sequence, decompose into multiple fragments"
-head = ["Name", "Source", "Fragment", "MZ", "RNAid", "RawRNAid"]
-all_fragments = []  # [[name1, source1, frag1, mz1, rnaid1, rawrnaid1], [name2, source2, frag2, mz2, rnaid2, rawrnaid2], ...]
+head = ["Name", "Source", "Fragment", "Position", "MZ", "RNAid", "RawRNAid"]
+all_fragments = []  # [[name1, source1, frag1, PositionStatus1, mz1, rnaid1, rawrnaid1], [name2, source2, frag2, PositionStatus2, mz2, rnaid2, rawrnaid2], ...]
 separate_by = 'G'
 total_num_data = len(rawRNA)
 for idx, line in enumerate(rawRNA):
@@ -69,16 +70,22 @@ for idx, line in enumerate(rawRNA):
     separate_idx = []
     # compute fragments
     fragments = []
+    position_status = []
     for i, c in enumerate(rna_sequence):
         if separate_by == c:
             separate_idx.append(i)
     for i, j in enumerate(separate_idx):
         if i == 0:
             fragments.append(rna_sequence[:j+1])
+            position_status.append('Start')
         else:
             fragments.append(rna_sequence[separate_idx[i-1]+1:separate_idx[i]+1])
+            position_status.append('Middle')
     if len(rna_sequence) >= separate_idx[-1]+1:
         fragments.append(rna_sequence[separate_idx[-1]+1:])
+        position_status.append('End')
+    else:
+        position_status[-1] = 'End'
     # compute fragments' mz AND add to all_fragments
     for i, temp_frag in enumerate(fragments):
         no_a = temp_frag.count('A')
@@ -93,8 +100,10 @@ for idx, line in enumerate(rawRNA):
             temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
         else:
             temp_mz = common_mz
-        all_fragments.append([rna_name, rna_source, temp_frag, temp_mz, rna_id, rawrna_id])
+        all_fragments.append([rna_name, rna_source, temp_frag, position_status[i], temp_mz, rna_id, rawrna_id])
 
+# print "Save all_fragments to file"
+# pickle.dump(all_fragments, open("all_fragments.p", "wb"))
 print "Total length of data to write into mysql is {0}".format(len(all_fragments))
 print "Store the data into db"
 placeholders = ", ".join(["%s"] * len(head))
@@ -109,6 +118,7 @@ with con:
                      Name VARCHAR(255), \
                      Source VARCHAR(255), \
                      Fragment VARCHAR(255), \
+                     Position VARCHAR(255), \
                      MZ VARCHAR(255), \
                      RNAid INT, \
                      RawRNAid INT)")

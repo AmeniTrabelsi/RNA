@@ -25,7 +25,7 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
     print "get DNA info from array read from file"
     for line in array:
         line_split = line.split(" ")
-        #if 'N' not in line_split[-1] and 'K' not in line_split[-1]:
+        #if 'N' in line_split[-1] or 'K' in line_split[-1]:
         name = line_split[0].split("-")[-1]
         source = line_split[0].split(".")[0][1:]
         sequence = line_split[-1]
