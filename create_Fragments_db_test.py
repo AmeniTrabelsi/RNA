@@ -51,8 +51,8 @@ with con:
     cur = con.cursor()
     cur.execute("SELECT * FROM RNA")
     raw_RNA_head = [i[0] for i in cur.description]
-    rawRNA = cur.fetchall()
-
+    rawRNA_all = cur.fetchall()
+rawRNA = rawRNA_all[:100]
 print "RNA table head is {0}".format(raw_RNA_head)
 print "For each rna sequence, decompose into multiple fragments"
 head = ["Name", "Source", "Fragment", "Position", "PositionNumber", "MZ", "RNAid", "RawRNAid"]
@@ -79,15 +79,15 @@ for idx, line in enumerate(rawRNA):
     count_no = 1
     for i, j in enumerate(separate_idx):
         if i == 0:
-            fragments.append(rna_sequence[:j+1])
+            fragments.append(rna_sequence[:j + 1])
             position_status.append('Start')
         else:
-            fragments.append(rna_sequence[separate_idx[i-1]+1:separate_idx[i]+1])
+            fragments.append(rna_sequence[separate_idx[i - 1] + 1:separate_idx[i] + 1])
             position_status.append('Middle')
         position_no.append(count_no)
         count_no += 1
-    if len(rna_sequence) >= separate_idx[-1]+1:
-        fragments.append(rna_sequence[separate_idx[-1]+1:])
+    if len(rna_sequence) >= separate_idx[-1] + 1:
+        fragments.append(rna_sequence[separate_idx[-1] + 1:])
         position_status.append('End')
         position_no.append(count_no)
     else:
@@ -102,22 +102,23 @@ for idx, line in enumerate(rawRNA):
         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
         if i == 0:
             temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0] + 2 * iso_map['H'][0]
-        elif i == total_no-1:
+        elif i == total_no - 1:
             temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - iso_map['H'][0]
         else:
             temp_mz = common_mz + iso_map['H'][0]
         all_fragments.append([rna_name, rna_source, temp_frag, position_status[i], position_no[i], temp_mz, rna_id, rawrna_id])
         sort_value.append("".join([temp_frag, '_', position_status[i]]))
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
-print "Calculate the unique fragments"
 u1, indices1 = np.unique(sort_value, return_index=True)
 u2, indices2 = np.unique(sort_value, return_inverse=True)
-head1 = ["Fragment", "Position", "MZ", "RNAid", "RawRNAid"]
 unique_fragment = []
 for i, j in enumerate(indices1):
     temp_infor = all_fragments[j]
     temp_index = np.where(indices2 == i)
     unique_fragment.append([temp_infor[2:4] + temp_infor[5:], temp_index[0]])
+
+    #fragment_infor = [all_fragments[k] for k in temp_index[0]]
+    #myQuery = "INSERT INTO Fragments_test ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
@@ -125,33 +126,20 @@ print "Total length of data to write into mysql is {0}".format(len(all_fragments
 print "Store the data into db"
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery = "INSERT INTO Fragments ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO Fragments_test ( %s ) VALUES ( %s )" % (columns, placeholders)
 
-print "Total length of data to write into mysql is {0}".format(len(unique_fragment))
-print "Store the data into db"
-placeholders1 = ", ".join(["%s"] * len(head1))
-columns1 = ", ".join(head1)
-myQuery1 = "INSERT INTO Uni_Fragments ( %s ) VALUES ( %s )" % (columns1, placeholders1)
-con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
+
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS Fragments")
-    cur.execute("CREATE TABLE Fragments(FragmentID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS Fragments_test")
+    cur.execute("CREATE TABLE Fragments_test(FragmentID INT PRIMARY KEY AUTO_INCREMENT, \
                      Name VARCHAR(255), \
                      Source VARCHAR(255), \
                      Fragment VARCHAR(255), \
                      Position VARCHAR(255), \
-                     PositionNumber VARCHAR(255), \
                      MZ VARCHAR(255), \
                      RNAid INT, \
                      RawRNAid INT)")
-    cur.execute("DROP TABLE IF EXISTS Uni_Fragments")
-    cur.execute("CREATE TABLE Uni_Fragments(UniFragmentID INT PRIMARY KEY AUTO_INCREMENT, \
-                         Fragment VARCHAR(255), \
-                         Position VARCHAR(255), \
-                         MZ VARCHAR(255), \
-                         RNAid INT, \
-                         RawRNAid INT)")
     # #  store by batch
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))
@@ -160,8 +148,4 @@ with con:
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
     # #  store all once if size is small
     # cur.executemany(myQuery, all_fragments)
-    batch = 200000
-    batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
-    for i in range(batch_num):
-        print "batch save to mysql {0} of {1}".format(i+1, batch_num)
-        cur.executemany(myQuery1, unique_fragment[i * batch : (i + 1) * batch])
+
