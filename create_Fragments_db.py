@@ -165,12 +165,11 @@ with con:
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))
     for i in range(batch_num):
-        print "batch save to mysql {0} of {1}".format(i+1, batch_num)
+        print "batch save to Table Fragments {0} of {1}".format(i+1, batch_num)
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
     # #  store all once if size is small
     # cur.executemany(myQuery, all_fragments)
-    batch = 200000
     batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
     for i in range(batch_num):
-        print "batch save to mysql {0} of {1}".format(i+1, batch_num)
+        print "batch save to Table Uni_Fragments {0} of {1}".format(i+1, batch_num)
         cur.executemany(myQuery1, unique_fragment[i * batch : (i + 1) * batch])
