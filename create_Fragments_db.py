@@ -135,13 +135,13 @@ for v in d.values():
 print "max index_str length is " + str(maxl)
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
-print "Total length of data to write into mysql is {0}".format(len(all_fragments))
+print "Total length of data to write into table Fragments is {0}".format(len(all_fragments))
 print "Store the data into db"
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
 myQuery = "INSERT INTO Fragments ( %s ) VALUES ( %s )" % (columns, placeholders)
 
-print "Total length of data to write into mysql is {0}".format(len(unique_fragment))
+print "Total length of data to write into table Uni_Fragments is {0}".format(len(unique_fragment))
 print "Store the data into db"
 placeholders1 = ", ".join(["%s"] * len(head1))
 columns1 = ", ".join(head1)
