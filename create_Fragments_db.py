@@ -5,6 +5,8 @@ import MySQLdb as mdb
 import math
 import numpy as np
 
+from mytools import find_set_with_index
+
 iso_map = {'C': [12.0, 13.0033548378],
            'H': [1.00782503207, 2.0141017778],
            'O': [15.99491461956, 16.99913170, 17.9991610],
@@ -108,16 +110,24 @@ for idx, line in enumerate(rawRNA):
             temp_mz = common_mz + iso_map['H'][0]
         all_fragments.append([rna_name, rna_source, temp_frag, position_status[i], position_no[i], temp_mz, rna_id, rawrna_id])
         sort_value.append("".join([temp_frag, '_', position_status[i]]))
+
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
 print "Calculate the unique fragments"
-u1, indices1 = np.unique(sort_value, return_index=True)
-u2, indices2 = np.unique(sort_value, return_inverse=True)
-head1 = ["Fragment", "Position", "MZ", "RNAid", "RawRNAid"]
+head1 = ["Fragment", "Position", "MZ", "IndexInAllFrag"]
+# # get unique_fragment using np.unique
+# u1, indices1 = np.unique(sort_value, return_index=True)
+# u2, indices2 = np.unique(sort_value, return_inverse=True)
+# unique_fragment = []
+# for i, j in enumerate(indices1):
+#     temp_info = all_fragments[j]
+#     temp_index = np.where(indices2 == i)
+#     unique_fragment.append(temp_info[2:4] + temp_info[5:] + list(temp_index[0]))
+# # get unique_frament using dictionary unsorted
 unique_fragment = []
-for i, j in enumerate(indices1):
-    temp_infor = all_fragments[j]
-    temp_index = np.where(indices2 == i)
-    unique_fragment.append([temp_infor[2:4] + temp_infor[5:], temp_index[0]])
+d = find_set_with_index(sort_value)
+for v in d.values():
+    temp_info = all_fragments[v[0]]
+    unique_fragment.append(temp_info[2:4] + temp_info[5:6] + [",".join([str(x) for x in v])])
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
@@ -150,8 +160,7 @@ with con:
                          Fragment VARCHAR(255), \
                          Position VARCHAR(255), \
                          MZ VARCHAR(255), \
-                         RNAid INT, \
-                         RawRNAid INT)")
+                         IndexInAllFrag TEXT)")
     # #  store by batch
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))

@@ -4,6 +4,7 @@
 import MySQLdb as mdb
 import math
 import numpy as np
+from mytools import find_set_with_index
 
 iso_map = {'C': [12.0, 13.0033548378],
            'H': [1.00782503207, 2.0141017778],
@@ -112,11 +113,15 @@ for idx, line in enumerate(rawRNA):
 u1, indices1 = np.unique(sort_value, return_index=True)
 u2, indices2 = np.unique(sort_value, return_inverse=True)
 unique_fragment = []
-for i, j in enumerate(indices1):
-    temp_infor = all_fragments[j]
-    temp_index = np.where(indices2 == i)
-    unique_fragment.append([temp_infor[2:4] + temp_infor[5:], temp_index[0]])
+# for i, j in enumerate(indices1):
+#     temp_infor = all_fragments[j]
+#     temp_index = np.where(indices2 == i)
+#     unique_fragment.append(temp_infor[2:4] + temp_infor[5:] + list(temp_index[0]))
 
+d = find_set_with_index(sort_value)
+for v in d.values():
+    temp_info = all_fragments[v[0]]
+    unique_fragment.append(temp_info[2:4] + temp_info[5:] + [",".join([str(x) for x in v])])
     #fragment_infor = [all_fragments[k] for k in temp_index[0]]
     #myQuery = "INSERT INTO Fragments_test ( %s ) VALUES ( %s )" % (columns, placeholders)
 
