@@ -3,7 +3,6 @@
 
 import MySQLdb as mdb
 import math
-import numpy as np
 
 from mytools import find_set_with_index
 
@@ -125,10 +124,15 @@ head1 = ["Fragment", "Position", "MZ", "IndexInAllFrag"]
 # # get unique_frament using dictionary unsorted
 unique_fragment = []
 d = find_set_with_index(sort_value)
+maxl = 0
 for v in d.values():
     temp_info = all_fragments[v[0]]
-    unique_fragment.append(temp_info[2:4] + temp_info[5:6] + [",".join([str(x) for x in v])])
+    index_str = ",".join([str(x) for x in v])
+    if len(index_str) > maxl:
+        maxl = len(index_str)
+    unique_fragment.append([temp_info[2], temp_info[3], temp_info[5], index_str])
 
+print "max index_str length is " + str(maxl)
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
 print "Total length of data to write into mysql is {0}".format(len(all_fragments))
@@ -160,7 +164,7 @@ with con:
                          Fragment VARCHAR(255), \
                          Position VARCHAR(255), \
                          MZ VARCHAR(255), \
-                         IndexInAllFrag TEXT)")
+                         IndexInAllFrag LONGTEXT)")
     # #  store by batch
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))
@@ -169,6 +173,7 @@ with con:
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
     # #  store all once if size is small
     # cur.executemany(myQuery, all_fragments)
+    batch = 10000
     batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
     for i in range(batch_num):
         print "batch save to Table Uni_Fragments {0} of {1}".format(i+1, batch_num)
