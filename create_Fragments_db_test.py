@@ -3,6 +3,7 @@
 
 import MySQLdb as mdb
 import math
+import copy
 import numpy as np
 from mytools import find_set_with_index
 
@@ -110,23 +111,29 @@ for idx, line in enumerate(rawRNA):
         all_fragments.append([rna_name, rna_source, temp_frag, position_status[i], position_no[i], temp_mz, rna_id, rawrna_id])
         sort_value.append("".join([temp_frag, '_', position_status[i]]))
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
-u1, indices1 = np.unique(sort_value, return_index=True)
-u2, indices2 = np.unique(sort_value, return_inverse=True)
-unique_fragment = []
+# u1, indices1 = np.unique(sort_value, return_index=True)
+# u2, indices2 = np.unique(sort_value, return_inverse=True)
+# unique_fragment = []
 # for i, j in enumerate(indices1):
 #     temp_infor = all_fragments[j]
 #     temp_index = np.where(indices2 == i)
 #     unique_fragment.append(temp_infor[2:4] + temp_infor[5:] + list(temp_index[0]))
 
+unique_fragment = []
 d = find_set_with_index(sort_value)
+maxl = 0
 for v in d.values():
     temp_info = all_fragments[v[0]]
-    unique_fragment.append(temp_info[2:4] + temp_info[5:] + [",".join([str(x) for x in v])])
-    #fragment_infor = [all_fragments[k] for k in temp_index[0]]
-    #myQuery = "INSERT INTO Fragments_test ( %s ) VALUES ( %s )" % (columns, placeholders)
+    index_str = ",".join([str(x) for x in v])
+    if len(index_str) > maxl:
+        maxl = len(index_str)
+        maxfrag = copy.copy(temp_info[2]+'_'+temp_info[3])
+    unique_fragment.append([temp_info[2], temp_info[3], temp_info[5], len(v), index_str])
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
+print "max index_str length is " + str(maxl)
+print "max index_str is " + maxfrag
 print "Total length of data to write into mysql is {0}".format(len(all_fragments))
 print "Store the data into db"
 placeholders = ", ".join(["%s"] * len(head))

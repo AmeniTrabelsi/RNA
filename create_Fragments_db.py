@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import MySQLdb as mdb
+import copy
 import math
 
 from mytools import find_set_with_index
@@ -112,7 +113,7 @@ for idx, line in enumerate(rawRNA):
 
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
 print "Calculate the unique fragments"
-head1 = ["Fragment", "Position", "MZ", "IndexInAllFrag"]
+head1 = ["Fragment", "Position", "MZ", "NumberFrag", "IndexInAllFrag"]
 # # get unique_fragment using np.unique
 # u1, indices1 = np.unique(sort_value, return_index=True)
 # u2, indices2 = np.unique(sort_value, return_inverse=True)
@@ -121,18 +122,22 @@ head1 = ["Fragment", "Position", "MZ", "IndexInAllFrag"]
 #     temp_info = all_fragments[j]
 #     temp_index = np.where(indices2 == i)
 #     unique_fragment.append(temp_info[2:4] + temp_info[5:] + list(temp_index[0]))
-# # get unique_frament using dictionary unsorted
+# # get unique_fragment using dictionary unsorted
 unique_fragment = []
 d = find_set_with_index(sort_value)
 maxl = 0
 for v in d.values():
     temp_info = all_fragments[v[0]]
     index_str = ",".join([str(x) for x in v])
-    if len(index_str) > maxl:
-        maxl = len(index_str)
-    unique_fragment.append([temp_info[2], temp_info[3], temp_info[5], index_str])
+    # if len(index_str) > maxl:
+    #     maxl = len(index_str)
+    if len(v) > maxl:
+        maxl = len(v)
+        maxfrag = copy.copy(temp_info[2] + '_' + temp_info[3])
+    unique_fragment.append([temp_info[2], temp_info[3], temp_info[5], len(v), index_str])
 
 print "max index_str length is " + str(maxl)
+print "max index_str is " + maxfrag
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
 print "Total length of data to write into table Fragments is {0}".format(len(all_fragments))
@@ -164,6 +169,7 @@ with con:
                          Fragment VARCHAR(255), \
                          Position VARCHAR(255), \
                          MZ VARCHAR(255), \
+                         NumberFrag VARCHAR(255), \
                          IndexInAllFrag LONGTEXT)")
     # #  store by batch
     batch = 200000
@@ -171,8 +177,8 @@ with con:
     for i in range(batch_num):
         print "batch save to Table Fragments {0} of {1}".format(i+1, batch_num)
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
-    # #  store all once if size is small
-    # cur.executemany(myQuery, all_fragments)
+    #  store all once if size is small
+    cur.executemany(myQuery, all_fragments)
     batch = 10000
     batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
     for i in range(batch_num):

@@ -5,3 +5,6 @@ paper/
 .DS_Store
 *.pyc
 */*.pyc
+*.png
+
+
