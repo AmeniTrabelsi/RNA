@@ -57,7 +57,7 @@ with con:
 rawRNA = rawRNA_all[:100]
 print "RNA table head is {0}".format(raw_RNA_head)
 print "For each rna sequence, decompose into multiple fragments"
-head = ["Name", "Source", "Fragment", "Position", "PositionNumber", "MZ", "RNAid", "RawRNAid"]
+head = ["Position_No", "RNA_ID", "Frag_ID"]
 all_fragments = []  # [[name1, source1, frag1, PositionStatus1, mz1, rnaid1, rawrnaid1], [name2, source2, frag2, PositionStatus2, mz2, rnaid2, rawrnaid2], ...]
 separate_by = 'G'
 total_num_data = len(rawRNA)
@@ -66,9 +66,6 @@ for idx, line in enumerate(rawRNA):
     if idx % 1000 == 0:
         print "processing data at {0}%".format(100.0 * idx / total_num_data)
     rna_id = line[0]
-    rawrna_id = line[1]
-    rna_name = line[2]
-    rna_source = line[3]
     rna_sequence = line[-1]
     separate_idx = []
     # compute fragments
@@ -94,46 +91,50 @@ for idx, line in enumerate(rawRNA):
         position_no.append(count_no)
     else:
         position_status[-1] = 'End'
-    # compute fragments' mz AND add to all_fragments
+    # add fragment to all_fragments
     for i, temp_frag in enumerate(fragments):
-        no_a = temp_frag.count('A')
-        no_u = temp_frag.count('U')
-        no_g = temp_frag.count('G')
-        no_c = temp_frag.count('C')
-        total_no = len(temp_frag)
-        common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
-        if i == 0:
-            temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0] + 2 * iso_map['H'][0]
-        elif i == total_no - 1:
-            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - iso_map['H'][0]
-        else:
-            temp_mz = common_mz + iso_map['H'][0]
-        all_fragments.append([rna_name, rna_source, temp_frag, position_status[i], position_no[i], temp_mz, rna_id, rawrna_id])
+        all_fragments.append([temp_frag, position_status[i], position_no[i], rna_id])
         sort_value.append("".join([temp_frag, '_', position_status[i]]))
-# calculate the unique fragment, all information of each unique fragment will be saved in one table
+
+
+head1 = ["Fragment", "Frag_Type", "MZ", "NO_A", "NO_U", "NO_G", "NO_C"]
+# # get unique_fragment using np.unique
 # u1, indices1 = np.unique(sort_value, return_index=True)
 # u2, indices2 = np.unique(sort_value, return_inverse=True)
 # unique_fragment = []
 # for i, j in enumerate(indices1):
-#     temp_infor = all_fragments[j]
+#     temp_info = all_fragments[j]
 #     temp_index = np.where(indices2 == i)
-#     unique_fragment.append(temp_infor[2:4] + temp_infor[5:] + list(temp_index[0]))
-
+#     unique_fragment.append(temp_info[2:4] + temp_info[5:] + list(temp_index[0]))
+# # get unique_fragment using dictionary unsorted
 unique_fragment = []
 d = find_set_with_index(sort_value)
-maxl = 0
+count_no = 1
 for v in d.values():
-    temp_info = all_fragments[v[0]]
-    index_str = ",".join([str(x) for x in v])
-    if len(index_str) > maxl:
-        maxl = len(index_str)
-        maxfrag = copy.copy(temp_info[2]+'_'+temp_info[3])
-    unique_fragment.append([temp_info[2], temp_info[3], temp_info[5], len(v), index_str])
+    temp_info = copy.copy(all_fragments[v[0]])
+    temp_frag = temp_info[0]
+    for x in v:
+        del all_fragments[x][0:2]
+        all_fragments[x].append(count_no)
+    # index_str = ",".join([str(x) for x in v])
+    count_no += 1
+    no_a = temp_frag.count('A')
+    no_u = temp_frag.count('U')
+    no_g = temp_frag.count('G')
+    no_c = temp_frag.count('C')
+    total_no = len(temp_frag)
+    common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * \
+                                                                                                 iso_map['H'][0]
+    if i == 0:
+        temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0] + 2 * iso_map['H'][0]
+    elif i == total_no - 1:
+        temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - iso_map['H'][0]
+    else:
+        temp_mz = common_mz + iso_map['H'][0]
+    unique_fragment.append([temp_frag, temp_info[1], temp_mz, no_a, no_u, no_g, no_c])
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
-print "max index_str length is " + str(maxl)
-print "max index_str is " + maxfrag
 print "Total length of data to write into mysql is {0}".format(len(all_fragments))
 print "Store the data into db"
 placeholders = ", ".join(["%s"] * len(head))

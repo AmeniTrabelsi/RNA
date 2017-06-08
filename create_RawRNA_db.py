@@ -12,14 +12,14 @@ head, data = readFAfile.read_fa_to_dict()
 ##  after get your table data ready, now you can write it into db
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery = "INSERT INTO RawRNA ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO OriRNA ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS RawRNA")
-    cur.execute("CREATE TABLE RawRNA(RawRNAid INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS OriRNA")
+    cur.execute("CREATE TABLE OriRNA(OriRNA_ID INT PRIMARY KEY AUTO_INCREMENT, \
                  Name VARCHAR(255), \
                  Source VARCHAR(255), \
-                 Sequence TEXT)")
+                 Ori_Seq TEXT)")
     cur.executemany(myQuery, data)

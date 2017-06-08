@@ -20,7 +20,7 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
                     array[-1] += line
 
     # define the head variable
-    rna_head = ["Name", "Source", "Sequence"]
+    rna_head = ["Name", "Source", "Ori_Seq"]
     rna_data = []  # [[name1, source1, seq1], [name2, source2, seq2], ...]
     print "get DNA info from array read from file"
     for line in array:
