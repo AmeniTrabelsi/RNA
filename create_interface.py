@@ -1,5 +1,5 @@
 
-from Tkinter import *
+from tkinter import *
 
 #creat the window
 #root = Tk()

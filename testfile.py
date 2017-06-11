@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 fname = "input_data/all-trnas.fa"
-print "read data from file"
+print("read data from file")
 array = []  # odd lines store info, even lines store sequence
 flag = False  # flag is used to indicate this is the second+ line for sequence
 with open(fname, "r") as lines:
@@ -20,7 +20,7 @@ with open(fname, "r") as lines:
 
 # define the dict variable
 rna_data = {"idx": [], "Name": [], "Source": [], "Sequence": []}
-print "get DNA info from array read from file"
+print("get DNA info from array read from file")
 count = 0
 for line in array:
     line_split = line.split(" ")
@@ -31,7 +31,7 @@ for line in array:
         rna_data["Sequence"].append(line_split[-1])
         count += 1
 
-print "map from DNA to RNA"
+print("map from DNA to RNA")
 dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C"}
 for id, dna_seq in enumerate(rna_data["Sequence"]):
     rna_seq = []
@@ -40,4 +40,4 @@ for id, dna_seq in enumerate(rna_data["Sequence"]):
     rna_data["Sequence"][id] = "".join(rna_seq)
 
 
-print "Finish get rna data from file"
+print("Finish get rna data from file")
