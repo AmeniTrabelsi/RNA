@@ -1,8 +1,8 @@
-import MySQLdb as mdb
+import pymysql as mdb
 import replace_K_N
 import math
 
-print "get data from OriRNA Table"
+print("get data from OriRNA Table")
 # fetch from RawRNA table, output values are ((RawRNAid, Name, Source, Sequence))
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
@@ -10,10 +10,10 @@ with con:
     cur.execute("SELECT * FROM OriRNA")
     rawRNA_head = [i[0] for i in cur.description]
     rawRNA = cur.fetchall()
-print "RawRNA table head is {0}".format(rawRNA_head)
+print("RawRNA table head is {0}".format(rawRNA_head))
 
-print "replace all K with A / C"
-print "replace all N with A / U / G / C"
+print("replace all K with A / C")
+print("replace all N with A / U / G / C")
 head = ["OriRNA_ID", "Sequence"]
 
 data = []
@@ -32,7 +32,7 @@ for raw_rna in rawRNA:
         for r_seq in rna_reps:
             data.append([rna_list[0], r_seq])
 
-print "write data to RNA table in RNAdb database"
+print("write data to RNA table in RNAdb database")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
 myQuery1 = "INSERT INTO RNA ( %s ) VALUES ( %s )" % (columns, placeholders)
@@ -53,7 +53,7 @@ with con:
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(data) / batch))
     for i in range(batch_num):
-        print "batch save to mysql {0} of {1}".format(i+1, batch_num)
+        print("batch save to mysql {0} of {1}".format(i+1, batch_num))
         cur.executemany(myQuery1, data[i * batch : (i + 1) * batch])
     # #  store all once if size is small
     # cur.executemany(myQuery, data)

@@ -28,4 +28,4 @@ if __name__ == '__main__':
     # output should be ["GAA", "GAC", "GUA", "GUC", "GGA", "GGC", "GCA", "GCC"]
     replaced = replace(seq)
     for r in replaced:
-        print r
+        print(r)

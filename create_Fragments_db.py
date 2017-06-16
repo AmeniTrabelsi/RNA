@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import MySQLdb as mdb
+import pymysql as mdb
 import copy
 import math
 
@@ -46,7 +46,7 @@ for key, value in RNA_constant.items():
 #       For each sub-sequence, compute MZ
 # Write “fragments” into “Fragments” table in db
 
-print "get data from RNA Table"
+print("get data from RNA Table")
 rawRNA = []  # fetch from RNA table, output values are ((RNAid, RawRNAid, Name, Source, Sequence))
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
@@ -55,8 +55,8 @@ with con:
     raw_RNA_head = [i[0] for i in cur.description]
     rawRNA = cur.fetchall()
 
-print "RNA table head is {0}".format(raw_RNA_head)
-print "For each rna sequence, decompose into multiple fragments"
+print("RNA table head is {0}".format(raw_RNA_head))
+print("For each rna sequence, decompose into multiple fragments")
 head = ["Position_No", "RNA_ID", "Frag_ID"]
 all_fragments = []  # [[name1, source1, frag1, PositionStatus1, mz1, rnaid1, rawrnaid1], [name2, source2, frag2, PositionStatus2, mz2, rnaid2, rawrnaid2], ...]
 separate_by = 'G'
@@ -64,7 +64,7 @@ total_num_data = len(rawRNA)
 sort_value = []
 for idx, line in enumerate(rawRNA):
     if idx % 1000 == 0:
-        print "processing data at {0}%".format(100.0 * idx / total_num_data)
+        print("processing data at {0}%".format(100.0 * idx / total_num_data))
     rna_id = line[0]
     rna_sequence = line[-1]
     separate_idx = []
@@ -97,8 +97,8 @@ for idx, line in enumerate(rawRNA):
         sort_value.append("".join([temp_frag, '_', position_status[i]]))
 
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
-print "Total length of data to write into table AllFragments is {0}".format(len(all_fragments))
-print "Calculate the unique fragments"
+print("Total length of data to write into table AllFragments is {0}".format(len(all_fragments)))
+print("Calculate the unique fragments")
 head1 = ["Fragment", "Frag_Type", "MW", "NO_A", "NO_U", "NO_G", "NO_C"]
 # # get unique_fragment using np.unique
 # u1, indices1 = np.unique(sort_value, return_index=True)
@@ -138,14 +138,14 @@ for v in d.values():
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
-print "Total length of data to write into table AllFragments is {0}".format(len(all_fragments))
-print "Store the data into db"
+print("Total length of data to write into table AllFragments is {0}".format(len(all_fragments)))
+print("Store the data into db")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
 myQuery = "INSERT INTO AllFragments ( %s ) VALUES ( %s )" % (columns, placeholders)
 #
-print "Total length of data to write into table Uni_Fragments is {0}".format(len(unique_fragment))
-print "Store the data into db"
+print("Total length of data to write into table Uni_Fragments is {0}".format(len(unique_fragment)))
+print("Store the data into db")
 placeholders1 = ", ".join(["%s"] * len(head1))
 columns1 = ", ".join(head1)
 myQuery1 = "INSERT INTO Uni_Fragments ( %s ) VALUES ( %s )" % (columns1, placeholders1)
@@ -170,12 +170,12 @@ with con:
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))
     for i in range(batch_num):
-        print "batch save to Table AllFragments {0} of {1}".format(i+1, batch_num)
+        print("batch save to Table AllFragments {0} of {1}".format(i+1, batch_num))
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
     #  store all once if size is small
     # cur.executemany(myQuery, all_fragments)
     batch = 10000
     batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
     for i in range(batch_num):
-        print "batch save to Table Uni_Fragments {0} of {1}".format(i+1, batch_num)
+        print("batch save to Table Uni_Fragments {0} of {1}".format(i+1, batch_num))
         cur.executemany(myQuery1, unique_fragment[i * batch : (i + 1) * batch])

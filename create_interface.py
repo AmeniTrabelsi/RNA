@@ -101,39 +101,71 @@ from tkinter import *
 
 # create drop down menus
 
-def doNothing():
-    print("ok ok I won't...")
+# def doNothing():
+#     print("ok ok I won't...")
+#
+# root = Tk()
+#
+# menu = Menu(root)
+# root.config(menu=menu)
+#
+# subMenu = Menu(menu)
+# menu.add_cascade(label="File", menu=subMenu)
+# subMenu.add_command(label="New project...", command=doNothing)
+# subMenu.add_command(label="New...", command=doNothing)
+# subMenu.add_separator()
+# subMenu.add_command(label="Exit", command=doNothing)
+#
+# editMenu = Menu(menu)
+# menu.add_cascade(label="Edit", menu=editMenu)
+# editMenu.add_command(label="Redo", command=doNothing)
+#
+# # ***** Toolbar ****
+#
+# toolbar = Frame(root, bg="blue")
+# insertButt = Button(toolbar, text="Insert Image", command=doNothing)
+# insertButt.pack(side=LEFT, padx=2, pady=2)
+# printButt = Button(toolbar, text="Print", command=doNothing)
+# printButt.pack(side=LEFT, padx=2, pady=2)
+#
+# toolbar.pack(side=TOP, fill=X)
+#
+# # ***** Status bar ****
+#
+# status = Label(root, text="Preparing to do nothing...", bd=1, relief=SUNKEN, anchor=W)
+# status.pack(side=BOTTOM, fill=X)
 
-root = Tk()
+# messagebox
+# import tkinter.messagebox
+# root = Tk()
+#
+# tkinter.messagebox.showinfo('Window Title', 'Monkeys can live up to 300 years')
+#
+# answer = tkinter.messagebox.askquestion('Qestion 1', 'Do you like silly faces?')
+#
+# if answer == 'yes':
+#     print(' 8===D~ ')
 
-menu = Menu(root)
-root.config(menu=menu)
+# shapes and graphics
+# root = Tk()
+#
+# canvas = Canvas(root, width=200, height=100)
+# canvas.pack()
+#
+# blackLine = canvas.create_line(0, 0, 200, 50)
+# redLine = canvas.create_line(0, 100, 200, 50, fill="red")
+# greenBox = canvas.create_rectangle(25, 25, 130, 60, fill="green")
+#
+# canvas.delete(redLine)
+# canvas.delete(ALL)
 
-subMenu = Menu(menu)
-menu.add_cascade(label="File", menu=subMenu)
-subMenu.add_command(label="New project...", command=doNothing)
-subMenu.add_command(label="New...", command=doNothing)
-subMenu.add_separator()
-subMenu.add_command(label="Exit", command=doNothing)
+# images and icons
+# root = Tk()
+# photo = PhotoImage(file="Ser_1_5_3.png")
+# label = Label(root, image=photo)
+# label.pack()
 
-editMenu = Menu(menu)
-menu.add_cascade(label="Edit", menu=editMenu)
-editMenu.add_command(label="Redo", command=doNothing)
 
-# ***** Toolbar ****
-
-toolbar = Frame(root, bg="blue")
-insertButt = Button(toolbar, text="Insert Image", command=doNothing)
-insertButt.pack(side=LEFT, padx=2, pady=2)
-printButt = Button(toolbar, text="Print", command=doNothing)
-printButt.pack(side=LEFT, padx=2, pady=2)
-
-toolbar.pack(side=TOP, fill=X)
-
-# ***** Status bar ****
-
-status = Label(root, text="Preparing to do nothing...", bd=1, relief=SUNKEN, anchor=W)
-status.pack(side=BOTTOM, fill=X)
 
 
 # root.tk.call('tk', 'scaling', 2.0)

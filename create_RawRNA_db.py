@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import MySQLdb as mdb
+import pymysql as mdb
 import read_fa_to_dict as readFAfile
 
 # # instead of manually create the db, we can use python [[], []] structure to write multiple column data into db
