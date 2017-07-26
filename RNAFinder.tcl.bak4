@@ -35,8 +35,7 @@ proc vTcl:project:info {} {
     set site_4_0 $site_3_0.scr40
     set site_3_0 $base.lab65
     set site_3_0 $base.lab73
-    set site_3_0 $base.scr43
-    set site_3_0 $base.scr44
+    set site_3_0 $base.scr79
     namespace eval ::widgets_bindings {
         set tagslist _TopLevel
     }
@@ -73,7 +72,7 @@ proc vTclWindow.top37 {base} {
         -menu "$top.m72" -background {#d9d9d9} -highlightbackground {#d9d9d9} \
         -highlightcolor black 
     wm focusmodel $top passive
-    wm geometry $top 2036x1880+853+7
+    wm geometry $top 2661x1880+757+89
     update
     # set in toplevel.wgt.
     global vTcl
@@ -477,50 +476,24 @@ proc vTclWindow.top37 {base} {
     place $site_3_0.rad75 \
         -in $site_3_0 -x 310 -y 37 -width 103 -height 52 -anchor nw \
         -bordermode ignore 
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr43 \
-        -background {#d9d9d9} -height 644 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 322 
-    vTcl:DefineAlias "$top.scr43" "Scrolledlistbox2" vTcl:WidgetProc "Toplevel1" 1
+    vTcl::widgets::ttk::scrolledtext::CreateCmd $top.scr79 \
+        -background {#d9d9d9} -height 665 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 1052 
+    vTcl:DefineAlias "$top.scr79" "Scrolledtext1" vTcl:WidgetProc "Toplevel1" 1
 
-    $top.scr43.01 configure -background white \
-        -disabledforeground #a3a3a3 \
-        -font TkFixedFont \
+    $top.scr79.01 configure -background white \
+        -font TkTextFont \
         -foreground black \
         -height 3 \
         -highlightbackground #d9d9d9 \
-        -highlightcolor #d9d9d9 \
+        -highlightcolor black \
+        -insertbackground black \
+        -insertborderwidth 3 \
         -selectbackground #c4c4c4 \
         -selectforeground black \
-        -width 10
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr44 \
-        -background {#d9d9d9} -height 654 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 302 
-    vTcl:DefineAlias "$top.scr44" "Scrolledlistbox3" vTcl:WidgetProc "Toplevel1" 1
-
-    $top.scr44.01 configure -background white \
-        -disabledforeground #a3a3a3 \
-        -font TkFixedFont \
-        -foreground black \
-        -height 3 \
-        -highlightbackground #d9d9d9 \
-        -highlightcolor #d9d9d9 \
-        -selectbackground #c4c4c4 \
-        -selectforeground black \
-        -width 10
-    button $top.but45 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command selectmodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Select >>} 
-    vTcl:DefineAlias "$top.but45" "Button4" vTcl:WidgetProc "Toplevel1" 1
-    button $top.but46 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command removemodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Remove >>} 
-    vTcl:DefineAlias "$top.but46" "Button5" vTcl:WidgetProc "Toplevel1" 1
+        -undo 1 \
+        -width 10 \
+        -wrap none
     ###################
     # SETTING GEOMETRY
     ###################
@@ -548,17 +521,8 @@ proc vTclWindow.top37 {base} {
     place $top.lab73 \
         -in $top -x 130 -y 390 -width 550 -relwidth 0 -height 95 -relheight 0 \
         -anchor nw -bordermode ignore 
-    place $top.scr43 \
-        -in $top -x 890 -y 80 -width 322 -relwidth 0 -height 644 -relheight 0 \
-        -anchor nw -bordermode ignore 
-    place $top.scr44 \
-        -in $top -x 1440 -y 80 -width 302 -relwidth 0 -height 654 \
-        -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but45 \
-        -in $top -x 1240 -y 260 -width 162 -relwidth 0 -height 63 \
-        -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but46 \
-        -in $top -x 1240 -y 390 -width 162 -relwidth 0 -height 63 \
+    place $top.scr79 \
+        -in $top -x 890 -y 70 -width 1052 -relwidth 0 -height 665 \
         -relheight 0 -anchor nw -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>

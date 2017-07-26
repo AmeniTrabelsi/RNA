@@ -73,7 +73,7 @@ proc vTclWindow.top37 {base} {
         -menu "$top.m72" -background {#d9d9d9} -highlightbackground {#d9d9d9} \
         -highlightcolor black 
     wm focusmodel $top passive
-    wm geometry $top 2036x1880+853+7
+    wm geometry $top 2661x1880+757+89
     update
     # set in toplevel.wgt.
     global vTcl
@@ -509,17 +509,15 @@ proc vTclWindow.top37 {base} {
         -width 10
     button $top.but45 \
         -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command selectmodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Select >>} 
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -pady 0 -text Button 
     vTcl:DefineAlias "$top.but45" "Button4" vTcl:WidgetProc "Toplevel1" 1
     button $top.but46 \
         -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command removemodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Remove >>} 
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -pady 0 -text Button 
     vTcl:DefineAlias "$top.but46" "Button5" vTcl:WidgetProc "Toplevel1" 1
     ###################
     # SETTING GEOMETRY
@@ -555,10 +553,10 @@ proc vTclWindow.top37 {base} {
         -in $top -x 1440 -y 80 -width 302 -relwidth 0 -height 654 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.but45 \
-        -in $top -x 1240 -y 260 -width 162 -relwidth 0 -height 63 \
+        -in $top -x 1250 -y 220 -width 132 -relwidth 0 -height 63 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.but46 \
-        -in $top -x 1240 -y 390 -width 162 -relwidth 0 -height 63 \
+        -in $top -x 1260 -y 380 -width 132 -relwidth 0 -height 63 \
         -relheight 0 -anchor nw -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>

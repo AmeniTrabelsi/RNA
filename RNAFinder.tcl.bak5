@@ -35,8 +35,6 @@ proc vTcl:project:info {} {
     set site_4_0 $site_3_0.scr40
     set site_3_0 $base.lab65
     set site_3_0 $base.lab73
-    set site_3_0 $base.scr43
-    set site_3_0 $base.scr44
     namespace eval ::widgets_bindings {
         set tagslist _TopLevel
     }
@@ -73,7 +71,7 @@ proc vTclWindow.top37 {base} {
         -menu "$top.m72" -background {#d9d9d9} -highlightbackground {#d9d9d9} \
         -highlightcolor black 
     wm focusmodel $top passive
-    wm geometry $top 2036x1880+853+7
+    wm geometry $top 2097x1517+932+223
     update
     # set in toplevel.wgt.
     global vTcl
@@ -419,8 +417,8 @@ proc vTclWindow.top37 {base} {
     place $site_3_0.can69 \
         -in $site_3_0 -x 920 -y 120 -anchor nw -bordermode ignore 
     labelframe $top.lab65 \
-        -foreground black -text Parameters -background {#d9d9d9} -height 135 \
-        -highlightbackground {#d9d9d9} -highlightcolor black -width 830 
+        -foreground black -text Parameters -background {#d9d9d9} -height 205 \
+        -highlightbackground {#d9d9d9} -highlightcolor black -width 420 
     vTcl:DefineAlias "$top.lab65" "Labelframe6" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab65
     label $site_3_0.lab66 \
@@ -438,7 +436,7 @@ proc vTclWindow.top37 {base} {
     place $site_3_0.lab66 \
         -in $site_3_0 -x 30 -y 50 -anchor nw -bordermode ignore 
     place $site_3_0.ent67 \
-        -in $site_3_0 -x 400 -y 50 -width 154 -relwidth 0 -height 51 \
+        -in $site_3_0 -x 116 -y 115 -width 154 -relwidth 0 -height 51 \
         -relheight 0 -anchor nw -bordermode ignore 
     button $top.but70 \
         -activebackground {#d9d9d9} -activeforeground {#000000} \
@@ -477,50 +475,6 @@ proc vTclWindow.top37 {base} {
     place $site_3_0.rad75 \
         -in $site_3_0 -x 310 -y 37 -width 103 -height 52 -anchor nw \
         -bordermode ignore 
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr43 \
-        -background {#d9d9d9} -height 644 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 322 
-    vTcl:DefineAlias "$top.scr43" "Scrolledlistbox2" vTcl:WidgetProc "Toplevel1" 1
-
-    $top.scr43.01 configure -background white \
-        -disabledforeground #a3a3a3 \
-        -font TkFixedFont \
-        -foreground black \
-        -height 3 \
-        -highlightbackground #d9d9d9 \
-        -highlightcolor #d9d9d9 \
-        -selectbackground #c4c4c4 \
-        -selectforeground black \
-        -width 10
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr44 \
-        -background {#d9d9d9} -height 654 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 302 
-    vTcl:DefineAlias "$top.scr44" "Scrolledlistbox3" vTcl:WidgetProc "Toplevel1" 1
-
-    $top.scr44.01 configure -background white \
-        -disabledforeground #a3a3a3 \
-        -font TkFixedFont \
-        -foreground black \
-        -height 3 \
-        -highlightbackground #d9d9d9 \
-        -highlightcolor #d9d9d9 \
-        -selectbackground #c4c4c4 \
-        -selectforeground black \
-        -width 10
-    button $top.but45 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command selectmodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Select >>} 
-    vTcl:DefineAlias "$top.but45" "Button4" vTcl:WidgetProc "Toplevel1" 1
-    button $top.but46 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
-        -background {#d9d9d9} -command removemodification \
-        -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Remove >>} 
-    vTcl:DefineAlias "$top.but46" "Button5" vTcl:WidgetProc "Toplevel1" 1
     ###################
     # SETTING GEOMETRY
     ###################
@@ -531,35 +485,23 @@ proc vTclWindow.top37 {base} {
         -in $top -x 129 -y 220 -width 550 -relwidth 0 -height 165 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab53 \
-        -in $top -x 130 -y 500 -width 700 -relwidth 0 -height 205 \
-        -relheight 0 -anchor nw -bordermode ignore 
+        -in $top -x 750 -y 60 -width 700 -relwidth 0 -height 205 -relheight 0 \
+        -anchor nw -bordermode ignore 
     place $top.lab63 \
-        -in $top -x 130 -y 710 -width 700 -relwidth 0 -height 185 \
+        -in $top -x 750 -y 280 -width 700 -relwidth 0 -height 185 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab38 \
-        -in $top -x 110 -y 980 -width 1850 -relwidth 0 -height 785 \
+        -in $top -x 130 -y 510 -width 1850 -relwidth 0 -height 785 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab65 \
-        -in $top -x 900 -y 750 -width 830 -relwidth 0 -height 135 \
+        -in $top -x 1510 -y 59 -width 420 -relwidth 0 -height 205 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.but70 \
-        -in $top -x 1720 -y 1780 -width 242 -relwidth 0 -height 83 \
+        -in $top -x 1730 -y 1330 -width 242 -relwidth 0 -height 83 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab73 \
         -in $top -x 130 -y 390 -width 550 -relwidth 0 -height 95 -relheight 0 \
         -anchor nw -bordermode ignore 
-    place $top.scr43 \
-        -in $top -x 890 -y 80 -width 322 -relwidth 0 -height 644 -relheight 0 \
-        -anchor nw -bordermode ignore 
-    place $top.scr44 \
-        -in $top -x 1440 -y 80 -width 302 -relwidth 0 -height 654 \
-        -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but45 \
-        -in $top -x 1240 -y 260 -width 162 -relwidth 0 -height 63 \
-        -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but46 \
-        -in $top -x 1240 -y 390 -width 162 -relwidth 0 -height 63 \
-        -relheight 0 -anchor nw -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>
 }

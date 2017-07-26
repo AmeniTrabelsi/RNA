@@ -15,9 +15,6 @@
 #    Jul 24, 2017 02:23:28 PM
 #    Jul 24, 2017 02:26:28 PM
 #    Jul 24, 2017 02:30:11 PM
-#    Jul 24, 2017 02:35:19 PM
-#    Jul 24, 2017 04:08:20 PM
-#    Jul 25, 2017 11:12:47 AM
 
 
 import sys
@@ -29,7 +26,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import tkinter as tk
-import webbrowser
 
 try:
     from Tkinter import *
@@ -108,8 +104,6 @@ def set_Tk_var():
     bion = IntVar()
     global cion
     cion = IntVar()
-    global aBion
-    aBion = IntVar()
     global dion
     dion = IntVar()
 
@@ -125,32 +119,7 @@ def allrnaselection():
         Eukaryotic.set(0)
     sys.stdout.flush()
 
-def removemodification():
-    global w
-    selection = w.Scrolledlistbox3.curselection()
-    pos = 0
-    for i in selection:
-        idx = int(i) - pos
-        w.Scrolledlistbox3.delete(idx, idx)
-        pos = pos + 1
-    sys.stdout.flush()
 
-def getAllInListBox3():
-    idx = 0
-    allInBox3 = []
-    while w.Scrolledlistbox3.get(idx):
-        allInBox3.append(w.Scrolledlistbox3.get(idx))
-        idx += 1
-    return allInBox3
-
-def selectmodification():
-    global w
-    allInBox3 = getAllInListBox3()
-    filename = [w.Scrolledlistbox2.get(idx) for idx in w.Scrolledlistbox2.curselection()]
-    for l in filename:
-        if l not in allInBox3:
-            w.Scrolledlistbox3.insert('end', l)
-    sys.stdout.flush()
 
 def adductselection():
     global w, msmode_selection
@@ -239,7 +208,7 @@ def Read_mzMLfile():
 
 
 def processdata():
-    global w, msmode_selection, Archaeal, Bacterial, Eukaryotic, alltrnas, Hplus, plus, Naplus, NH4plus, Kplus, H2OplusHplus, C2H4Nplus, C2H3N1Naplus, Ptplus, Hminus, minus, Clminus, minusH2OHminus, H2Naminus, wion, xion, yion, zion, aion, bion, cion, dion, aBion
+    global w, msmode_selection, Archaeal, Bacterial, Eukaryotic, alltrnas, Hplus, plus, Naplus, NH4plus, Kplus, H2OplusHplus, C2H4Nplus, C2H3N1Naplus, Ptplus, Hminus, minus, Clminus, minusH2OHminus, H2Naminus, wion, xion, yion, zion, aion, bion, cion, dion
     con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
     adduct_ions = {'H+': [1.00727645207, 'Positive'],
                    '+': [-0.00054858, 'Positive'],
@@ -342,8 +311,6 @@ def processdata():
         fragion_set.append('c')
     if dion.get() == 1:
         fragion_set.append('d')
-    if aBion.get() == 1:
-        fragion_set.append('a-B')
 
     parent_mz = msmsSpectra['parent_mz']
     for idx, mz in enumerate(parent_mz):
@@ -383,114 +350,12 @@ def processdata():
 def xxx(p1):
     pass
 
-def CurSelect(evt):
-    global w
-    w.Scrolledlistbox2.bind('<Button-3>', popup)
-
-file2Url = {'m1A': 'http://www.yahoo.com',
-            'm2A': 'http://www.louisville.edu'}
-
-def go2link():
-    global w
-    idx = w.Scrolledlistbox2.curselection()[0]
-    file = w.Scrolledlistbox2.get(idx)
-    url = file2Url[file]
-    webbrowser.open_new(url)
-
-def popup(event):
-    global menu
-    menu.post(event.x_root, event.y_root)
-
 def init(top, gui, *args, **kwargs):
     global w, top_level, root
     w = gui
+    # w.Entry1.config(text="3")
     top_level = top
     root = top
-    global menu
-    menu = Menu(root, tearoff=0)
-    menu.add_command(label='Go to Website', command=go2link)
-    menu.add_command(label='Done', command='')
-
-    w.Scrolledlistbox2.config(selectmode='extended')
-    w.Scrolledlistbox3.config(selectmode='extended')
-
-    # greek_alphabet = {
-    #     u'\u0391': 'Alpha',
-    #     u'\u0392': 'Beta',
-    #     u'\u0393': 'Gamma',
-    #     u'\u0394': 'Delta',
-    #     u'\u0395': 'Epsilon',
-    #     u'\u0396': 'Zeta',
-    #     u'\u0397': 'Eta',
-    #     u'\u0398': 'Theta',
-    #     u'\u0399': 'Iota',
-    #     u'\u039A': 'Kappa',
-    #     u'\u039B': 'Lamda',
-    #     u'\u039C': 'Mu',
-    #     u'\u039D': 'Nu',
-    #     u'\u039E': 'Xi',
-    #     u'\u039F': 'Omicron',
-    #     u'\u03A0': 'Pi',
-    #     u'\u03A1': 'Rho',
-    #     u'\u03A3': 'Sigma',
-    #     u'\u03A4': 'Tau',
-    #     u'\u03A5': 'Upsilon',
-    #     u'\u03A6': 'Phi',
-    #     u'\u03A7': 'Chi',
-    #     u'\u03A8': 'Psi',
-    #     u'\u03A9': 'Omega',
-    #     u'\u03B1': 'alpha',
-    #     u'\u03B2': 'beta',
-    #     u'\u03B3': 'gamma',
-    #     u'\u03B4': 'delta',
-    #     u'\u03B5': 'epsilon',
-    #     u'\u03B6': 'zeta',
-    #     u'\u03B7': 'eta',
-    #     u'\u03B8': 'theta',
-    #     u'\u03B9': 'iota',
-    #     u'\u03BA': 'kappa',
-    #     u'\u03BB': 'lamda',
-    #     u'\u03BC': 'mu',
-    #     u'\u03BD': 'nu',
-    #     u'\u03BE': 'xi',
-    #     u'\u03BF': 'omicron',
-    #     u'\u03C0': 'pi',
-    #     u'\u03C1': 'rho',
-    #     u'\u03C3': 'sigma',
-    #     u'\u03C4': 'tau',
-    #     u'\u03C5': 'upsilon',
-    #     u'\u03C6': 'phi',
-    #     u'\u03C7': 'chi',
-    #     u'\u03C8': 'psi',
-    #     u'\u03C9': 'omega',
-    # }
-    # codes = {
-    #     1 : u"\u00B9",
-    #     2 : u"\u00B2",
-    #     3 : u"\u00B3",
-    #     4 : u"\u2074",
-    #     5 : u"\u2075",
-    #     6 : u"\u2076",
-    #     7 : u"\u2077"
-    # }
-    # selected_files = ["m\u00B9A", "m\u00B2A", "m\u2076A", "Am", "ms\u00B2m\u2076A", "i\u2076A", "ms\u00B2i\u2076A", "io\u2076A", "ms\u00B2io\u2076A", "g\u2076A", "t\u2076A", "ms\u00B2t\u2076A", "m\u2076t\u2076A",
-    #                   "hn\u2076A", "ms\u00B2hn\u2076A", "Ar(p)", "I", "m\u00B9I", "m\u00B9Im", "m\u00B3C", "m\u2075C", "Cm", "s\u00B2C", "ac\u2074C", "f\u2075C", "m\u2075Cm", "ac\u2074Cm",
-    #                   "k\u00B2C", "m\u00B9G", "m\u00B2G", "m\u2077G", "Gm", "m\u00B22G", "m\u00B2Gm", "m\u00B22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
-    #                   "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03C8', "D", "m\u2075U", "Um", "m5Um", "m1\u03C8", "\u03C8m",
-    #                   "s\u00B2U", "s\u2074U", "m\u2075s\u00B2U", "s\u00B2Um", "acp\u00B3U", "ho\u2075U", "mo\u2075U", "cmo\u2075U"]
-    selected_files = ["m1A", "m2A", "m6A", "Am", "ms2m6A", "i6A", "ms2i6A", "io6A", "ms2io6A", "g6A", "t6A", "ms2t6A", "m6t6A",
-                      "hn6A", "ms2hn6A", "Ar(p)", "I", "m1I", "m1Im", "m3C", "m5C", "Cm", "s2C", "ac4C", "f5C", "m5Cm", "ac4Cm",
-                      "k2C", "m1G", "m2G", "m7G", "Gm", "m22G", "m2Gm", "m22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
-                      "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03A8', "D", "m5U", "Um", "m5Um", "m1\u03A8", "\u03A8m",
-                      "s2U", "s4U", "m5s2U", "s2Um", "acp3U", "ho5U", "mo5U", "cmo5U", "mcmo5U", "chm5U", "mchm5U", "mcm5U", "mcm5Um",
-                      "mcm5s2U", "nm5s2U", "mnm5U", "mnm5s2U", "mnm5se2U", "ncm5U", "ncm5Um", "cmnm5U", "cmnm5Um", "cmnm5s2U", "m62A",
-                      "Im", "m4C", "m4Cm", "hm5C", "m3U", "m1acp3\u03A8", "cm5U", "m6Am", "m62Am", "m2,7G", "m2,2,7G", "m3Um", "m5D",
-                      "m3\u03A8", "f5Cm", "m1Gm", "m1Am", "\u03C4m5U", "\u03C4m5s2U", "imG-14", "imG-14", "ac6A", "inm5U", "inm5s2U",
-                      "inm5Um", "m2,7Gm", "m42Cm", "C+", "m8A", "gmnm5s2U", "gcmnm5s2U", "cnm5U"]
-    for l in selected_files:
-        w.Scrolledlistbox2.insert('end', l)
-    w.Scrolledlistbox2.bind('<<ListboxSelect>>', CurSelect)
-    w.Entry1.insert(0, "5")
 
 def destroy_window():
     # Function which closes the window.
@@ -501,6 +366,40 @@ def destroy_window():
 if __name__ == '__main__':
     import RNAFinder
     RNAFinder.vp_start_gui()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
