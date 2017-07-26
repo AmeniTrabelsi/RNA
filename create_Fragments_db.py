@@ -57,7 +57,7 @@ with con:
 
 print("RNA table head is {0}".format(raw_RNA_head))
 print("For each rna sequence, decompose into multiple fragments")
-head = ["Position_No", "RNA_ID", "Frag_ID"]
+head = ["Position_No", "RNA_ID", "Oligo_ID"]
 all_fragments = []  # [[name1, source1, frag1, PositionStatus1, mz1, rnaid1, rawrnaid1], [name2, source2, frag2, PositionStatus2, mz2, rnaid2, rawrnaid2], ...]
 separate_by = 'G'
 total_num_data = len(rawRNA)
@@ -79,7 +79,7 @@ for idx, line in enumerate(rawRNA):
     for i, j in enumerate(separate_idx):
         if i == 0:
             fragments.append(rna_sequence[:j + 1])
-            position_status.append('Start')
+            position_status.append('5Prime')
         else:
             fragments.append(rna_sequence[separate_idx[i - 1] + 1:separate_idx[i] + 1])
             position_status.append('Middle')
@@ -87,10 +87,10 @@ for idx, line in enumerate(rawRNA):
         count_no += 1
     if len(rna_sequence) >= separate_idx[-1] + 1:
         fragments.append(rna_sequence[separate_idx[-1] + 1:])
-        position_status.append('End')
+        position_status.append('3Prime')
         position_no.append(count_no)
     else:
-        position_status[-1] = 'End'
+        position_status[-1] = '3Prime'
     # add fragment to all_fragments
     for i, temp_frag in enumerate(fragments):
         all_fragments.append([temp_frag, position_status[i], position_no[i], rna_id])
@@ -99,7 +99,7 @@ for idx, line in enumerate(rawRNA):
 # calculate the unique fragment, all information of each unique fragment will be saved in one table
 print("Total length of data to write into table AllFragments is {0}".format(len(all_fragments)))
 print("Calculate the unique fragments")
-head1 = ["Fragment", "Frag_Type", "MW", "NO_A", "NO_U", "NO_G", "NO_C"]
+head1 = ["Oligonucleotide", "Oligo_Type", "MW", "NO_A", "NO_U", "NO_G", "NO_C"]
 # # get unique_fragment using np.unique
 # u1, indices1 = np.unique(sort_value, return_index=True)
 # u2, indices2 = np.unique(sort_value, return_inverse=True)
@@ -115,6 +115,7 @@ count_no = 1
 for v in d.values():
     temp_info = copy.copy(all_fragments[v[0]])
     temp_frag = temp_info[0]
+    temp_position = temp_info[1]
     for x in v:
         del all_fragments[x][0:2]
         all_fragments[x].append(count_no)
@@ -127,40 +128,40 @@ for v in d.values():
     total_no = len(temp_frag)
     common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * \
                                                                                                  iso_map['H'][0]
-    if i == 0:
+    if temp_position == '5Prime':
         temp_mz = common_mz + iso_map['P'][0] + 3 * iso_map['O'][0] + 2 * iso_map['H'][0]
-    elif i == total_no - 1:
-        temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - iso_map['H'][0]
+    elif temp_position == '3Prime':
+        temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0] - iso_map['H'][0]
     else:
         temp_mz = common_mz + iso_map['H'][0]
-    unique_fragment.append([temp_frag, temp_info[1], temp_mz, no_a, no_u, no_g, no_c])
+    unique_fragment.append([temp_frag, temp_position, temp_mz, no_a, no_u, no_g, no_c])
 
 
 # print "Save all_fragments to file"
 # pickle.dump(all_fragments, open("all_fragments.p", "wb"))
-print("Total length of data to write into table AllFragments is {0}".format(len(all_fragments)))
+print("Total length of data to write into table AllOligonucleotides is {0}".format(len(all_fragments)))
 print("Store the data into db")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery = "INSERT INTO AllFragments ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO AllOligonucleotides ( %s ) VALUES ( %s )" % (columns, placeholders)
 #
-print("Total length of data to write into table Uni_Fragments is {0}".format(len(unique_fragment)))
+print("Total length of data to write into table Uni_Oligos is {0}".format(len(unique_fragment)))
 print("Store the data into db")
 placeholders1 = ", ".join(["%s"] * len(head1))
 columns1 = ", ".join(head1)
-myQuery1 = "INSERT INTO Uni_Fragments ( %s ) VALUES ( %s )" % (columns1, placeholders1)
+myQuery1 = "INSERT INTO Uni_Oligos ( %s ) VALUES ( %s )" % (columns1, placeholders1)
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS AllFragments")
-    cur.execute("CREATE TABLE AllFragments(AllFrag_ID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS AllOligonucleotides")
+    cur.execute("CREATE TABLE AllOligonucleotides(AllOligo_ID INT PRIMARY KEY AUTO_INCREMENT, \
                      Position_No VARCHAR(255), \
                      RNA_ID INT, \
-                     Frag_ID INT)")
-    cur.execute("DROP TABLE IF EXISTS Uni_Fragments")
-    cur.execute("CREATE TABLE Uni_Fragments(Frag_ID INT PRIMARY KEY AUTO_INCREMENT, \
-                         Fragment VARCHAR(255), \
-                         Frag_Type VARCHAR(255), \
+                     Oligo_ID INT)")
+    cur.execute("DROP TABLE IF EXISTS Uni_Oligos")
+    cur.execute("CREATE TABLE Uni_Oligos(Oligo_ID INT PRIMARY KEY AUTO_INCREMENT, \
+                         Oligonucleotide VARCHAR(255), \
+                         Oligo_Type VARCHAR(255), \
                          MW VARCHAR(255), \
                          NO_A VARCHAR(255), \
                          NO_U VARCHAR(255), \
@@ -170,12 +171,12 @@ with con:
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(all_fragments) / batch))
     for i in range(batch_num):
-        print("batch save to Table AllFragments {0} of {1}".format(i+1, batch_num))
+        print("batch save to Table AllOligonucleotides {0} of {1}".format(i+1, batch_num))
         cur.executemany(myQuery, all_fragments[i * batch : (i + 1) * batch])
     #  store all once if size is small
     # cur.executemany(myQuery, all_fragments)
     batch = 10000
     batch_num = int(math.ceil(1.0 * len(unique_fragment) / batch))
     for i in range(batch_num):
-        print("batch save to Table Uni_Fragments {0} of {1}".format(i+1, batch_num))
+        print("batch save to Table Uni_Oligos {0} of {1}".format(i+1, batch_num))
         cur.executemany(myQuery1, unique_fragment[i * batch : (i + 1) * batch])

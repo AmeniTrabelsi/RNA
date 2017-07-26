@@ -39,6 +39,16 @@ class ButtonApp(tk.Frame):
         print('OK')
 
 
+class ReadFile_ButtonApp(tk.Frame):
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        self.pack()
+
+        tk.Button(self, text='Load the selected file >>', command=self.ok).pack()
+
+    def ok(self):
+        print('OK')
+
 class EntryApp(tk.Frame):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
@@ -298,6 +308,11 @@ class RNAAssemble(tk.Frame):
         frame1.grid(row=1, column=0, columnspan=2)
 
         uploadfileApp(frame1)
+
+        frame11 = tk.Frame(self)
+        frame11.grid(row=1, column=2)
+
+        ReadFile_ButtonApp(frame11)
 
         frame2 = tk.Frame(self)
         frame2.grid(row=2, column=0)

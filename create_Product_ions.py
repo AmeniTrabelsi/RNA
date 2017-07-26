@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import MySQLdb as mdb
+import pymysql as mdb
 import math
 # import pickle
 
@@ -59,41 +59,40 @@ for key, value in RNA_constant.items():
 #       For each ion, compute MZs in positive mode and negative mode
 # Write “product_ions” into “Product_ions” table in db
 
-print "get data from Fragments Table"
+print("get data from Fragments Table")
 fragments = []  # fetch from Fragments table, output values are ((FragmentID, Name, Source, Fragment, MZ, RNAid, RawRNAid))
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("SELECT * FROM Fragments")
+    cur.execute("SELECT * FROM Uni_two_oligos")
     fragments_head = [i[0] for i in cur.description]
     fragments = cur.fetchall()
 
-
-print "ProductIon table head is {0}".format(fragments_head)
-print "For each fragment, calculate all product ion and corresponding mzs"
-head = ["Name", "Source", "ProductIon", "ProductIonClass", "AdductsIon", "AdductsIonType", "MZ", "FragmentID", "RNAid", "RawRNAid"]
+# fragments = []
+# fragments.append(temp_fragments[1])
+# fragments.append(temp_fragments[0])
+print("ProductIon table head is {0}".format(fragments_head))
+print("For each fragment, calculate all product ion and corresponding mzs")
+head = ["Oligo_ID", "Oligonucleotide", "Oligo_Type", "FragmentIon", "FragmentIonClass", "AdductIon", "AdductIonType", "MZ"]
 all_production = []  # [[name1, source1, production1, productionclass1, adductsion1, adductsiontype1, mz1, fragmentid1, rnaid1, rawrnaid1], [name2, source2, production2, productionclass2, adductsion2, adductsiontype2, mz2, fragmentid2, rnaid2, rawrnaid2], ...]
-productionclass = {'a': 1, 'b': 1, 'c': 1, 'd': 1, 'w': 2, 'x': 2, 'y': 2, 'z': 2}
+productionclass = {'a': 1, 'b': 1, 'c': 1, 'd': 1, 'a-B': 1, 'w': 2, 'x': 2, 'y': 2, 'z': 2}
 total_num_data = len(fragments)
 for idx, line in enumerate(fragments):
     if idx % 1000 == 0:
-        print "processing data at {0}%".format(100.0 * idx / total_num_data)
-    fragment_id = line[0]
-    rna_name = line[1]
-    rna_source = line[2]
-    rna_fragment = line[3]
-    rna_position = line[4]
-    rna_id = line[6]
-    rawrna_id = line[7]
+        print("processing data at {0}%".format(100.0 * idx / total_num_data))
+    oligo_id = line[0]
+    oligo_seq = line[1][::-1]
+    oligo_type = line[2]
+    No_letter = line[3:]
     # compute ProductIon
     temp_ion = []
-    no_letter = len(rna_fragment)
-    for i, temp_letter in enumerate(rna_fragment):
+    no_letter = len(oligo_seq)
+    for i, temp_letter in enumerate(oligo_seq):
         if i != no_letter-1:
             for j in productionclass:
                 if productionclass[j] == 1:
                     temp_positionclass = j + str(i + 1)
-                    temp1 = rna_fragment[:i+1]
+                    temp1 = oligo_seq[:i+1]
                     no_a = temp1.count('A')
                     no_u = temp1.count('U')
                     no_g = temp1.count('G')
@@ -101,48 +100,42 @@ for idx, line in enumerate(fragments):
                     total_no = len(temp1)
                     common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
                     if j == 'a':
-                        if rna_position == 'Start':
+                        if oligo_type == '5prime':
                             temp_mz = common_mz + 2 * iso_map['H'][0]
                         else:
                             temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
                     elif j == 'b':
-                        if rna_position == 'Start':
+                        if oligo_type == '5prime':
                             temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
                         else:
                             temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
                     elif j == 'c':
-                        if rna_position == 'Start':
+                        if oligo_type == '5prime':
                             temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0]
                     elif j == 'd':
-                        if rna_position == 'Start':
+                        if oligo_type == '5prime':
                             temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                    elif j == 'w':
-                        if rna_position == 'End':
-                            temp_mz = common_mz + iso_map['H'][0]
+                    elif j == 'a-B':
+                        letterB = temp1[-1]
+                        if letterB == 'A':
+                            mz_B = mz_A
+                        elif letterB == 'U':
+                            mz_B = mz_U
+                        elif letterB == 'G':
+                            mz_B = mz_G
+                        elif letterB == 'C':
+                            mz_B = mz_C
+                        if oligo_type == '5prime':
+                            temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
                         else:
-                            temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-                    elif j == 'x':
-                        if rna_position == 'End':
-                            temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
-                        else:
-                            temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
-                    elif j == 'y':
-                        if rna_position == 'End':
-                            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-                        else:
-                            temp_mz = common_mz + iso_map['H'][0]
-                    elif j == 'z':
-                        if rna_position == 'End':
-                            temp_mz = common_mz - iso_map['P'][0] - 4 * iso_map['O'][0]
-                        else:
-                            temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
                 elif productionclass[j] == 2:
                     temp_positionclass = j + str(no_letter - i - 1)
-                    temp1 = rna_fragment[i+1:]
+                    temp1 = oligo_seq[i+1:]
                     no_a = temp1.count('A')
                     no_u = temp1.count('U')
                     no_g = temp1.count('G')
@@ -150,57 +143,55 @@ for idx, line in enumerate(fragments):
                     total_no = len(temp1)
                     common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
                     if j == 'w':
-                        if rna_position == 'End':
-                            temp_mz = common_mz + iso_map['H'][0]
+                        if oligo_type == '3prime':
+                            temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
                         else:
                             temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
                     elif j == 'x':
-                        if rna_position == 'End':
-                            temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                        if oligo_type == '3prime':
+                            temp_mz = common_mz + iso_map['H'][0]
                         else:
                             temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
                     elif j == 'y':
-                        if rna_position == 'End':
-                            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                        if oligo_type == '3prime':
+                            temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0]
                     elif j == 'z':
-                        if rna_position == 'End':
-                            temp_mz = common_mz - iso_map['P'][0] - 4 * iso_map['O'][0]
+                        if oligo_type == '3prime':
+                            temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
-                temp_ion = rna_fragment + '_' + temp_positionclass
-                #for temp_adducts in adduct_ions:
-                temp_adducts = 'H+'
-                temp_adduct_mz = temp_mz + adduct_ions[temp_adducts][0]
-                all_production.append([rna_name, rna_source, temp_ion, temp_positionclass, temp_adducts, adduct_ions[temp_adducts][1], temp_adduct_mz, fragment_id, rna_id, rawrna_id])
+                temp_ion = oligo_seq + '_' + temp_positionclass
+                temp_adducts = {'H-', '-'}
+                for temp1_adducts in temp_adducts:
+                    temp_adduct_mz = temp_mz + 2*adduct_ions[temp1_adducts][0]
+                    all_production.append([oligo_id, oligo_seq[::-1], oligo_type, temp_ion, temp_positionclass, temp1_adducts, adduct_ions[temp1_adducts][1], temp_adduct_mz])
 
-print "Total length of data to write into mysql is {0}".format(len(all_production))
-print "Store the data into db"
+print("Total length of data to write into mysql is {0}".format(len(all_production)))
+print("Store the data into db")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery = "INSERT INTO ProductIons_1 ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO Two_oligo_FragmentIons ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS ProductIons_1")
-    cur.execute("CREATE TABLE ProductIons_1(ProductIonID INT PRIMARY KEY AUTO_INCREMENT, \
-                     Name VARCHAR(255), \
-                     Source VARCHAR(255), \
-                     ProductIon VARCHAR(255), \
-                     ProductIonClass VARCHAR(255), \
+    cur.execute("DROP TABLE IF EXISTS Two_oligo_FragmentIons")
+    cur.execute("CREATE TABLE Two_oligo_FragmentIons(FragmentIonID INT PRIMARY KEY AUTO_INCREMENT, \
+                     Oligo_ID VARCHAR(255), \
+                     Oligonucleotide VARCHAR(255), \
+                     Oligo_Type VARCHAR(255), \
+                     FragmentIon VARCHAR(255), \
+                     FragmentIonClass VARCHAR(255), \
                      AdductIon VARCHAR(255), \
                      AdductIonType VARCHAR(255), \
-                     MZ VARCHAR(255), \
-                     FragmentID VARCHAR(255), \
-                     RNAid INT, \
-                     RawRNAid INT)")
-    # #  store by batch
-    batch = 200000
-    batch_num = int(math.ceil(1.0 * len(all_production) / batch))
-    for i in range(batch_num):
-        print "batch save to mysql {0} of {1}".format(i+1, batch_num)
-        cur.executemany(myQuery, all_production[i * batch : (i + 1) * batch])
+                     MZ VARCHAR(255))")
+    # # #  store by batch
+    # batch = 200000
+    # batch_num = int(math.ceil(1.0 * len(all_production) / batch))
+    # for i in range(batch_num):
+    #     print("batch save to mysql {0} of {1}".format(i+1, batch_num))
+    #     cur.executemany(myQuery, all_production[i * batch : (i + 1) * batch])
     # #  store all once if size is small
-    # cur.executemany(myQuery, all_production)
+    cur.executemany(myQuery, all_production)

@@ -1,6 +1,7 @@
 *.pdf
 .idea/
 input_data/*.fa
+input_data/*.*ML
 paper/
 .DS_Store
 *.pyc
