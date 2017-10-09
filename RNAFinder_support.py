@@ -18,6 +18,10 @@
 #    Jul 24, 2017 02:35:19 PM
 #    Jul 24, 2017 04:08:20 PM
 #    Jul 25, 2017 11:12:47 AM
+#    Aug 07, 2017 11:48:17 AM
+#    Sep 21, 2017 11:48:01 AM
+#    Sep 21, 2017 02:02:21 PM
+#    Sep 21, 2017 02:19:00 PM
 
 
 import sys
@@ -30,6 +34,13 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import tkinter as tk
 import webbrowser
+from tkinter import *
+from tkinter.ttk import *
+from Calculate_Spec_Sim import Calculate_Spec_Sim
+import collections
+from numpy import prod
+import itertools
+import xlwt
 
 try:
     from Tkinter import *
@@ -112,44 +123,257 @@ def set_Tk_var():
     aBion = IntVar()
     global dion
     dion = IntVar()
+    global allbase
+    allbase = IntVar()
+    global ABase
+    ABase = IntVar()
+    global CBase
+    CBase = IntVar()
+    global GBase
+    GBase = IntVar()
+    global UBase
+    UBase = IntVar()
+    global RNASource_selection
+    RNASource_selection = IntVar()
+    RNASource_selection.set(1)
+    global tRNA
+    tRNA = RNASource_selection
+    global rRNA
+    rRNA = RNASource_selection
+    global mRNA
+    mRNA = RNASource_selection
+    global tmRNA
+    tmRNA = RNASource_selection
+    global snRNA
+    snRNA = RNASource_selection
+    global Chromosomal_RNA
+    Chromosomal_RNA = RNASource_selection
+    global none_rna
+    none_rna = RNASource_selection
+
+
+class App(Frame):
+
+    def __init__(self, parent):
+        Frame.__init__(self, parent)
+        #self.CreateUI()
+        #self.LoadTable()
+        self.grid(sticky = (N,S,W,E))
+        self.row=0
+        parent.grid_rowconfigure(0, weight = 1)
+        parent.grid_columnconfigure(0, weight = 1)
+
+    def CreateUI(self,title):
+        tv = Treeview(self)
+        tv.bind("<Button-3>", self.onClick)
+        tv['columns'] = ('a', 'b', 'c','d','e','f')
+        tv.heading("#0", text=title[0])
+        tv.column("#0", anchor='center', width=100)
+        tv.heading('a', text=title[1])
+        tv.column('a', anchor='center', width=100)
+        tv.heading('b', text=title[2])
+        tv.column('b', anchor='center', width=100)
+        tv.heading('c', text=title[3])
+        tv.column('c', anchor='center', width=100)
+        tv.heading('d', text=title[4])
+        tv.column('d', anchor='center', width=100)
+        tv.heading('e', text=title[5])
+        tv.column('e', anchor='center', width=100)
+        tv.grid(sticky = (N,S,W,E))
+        self.treeview = tv
+        self.grid_rowconfigure(0, weight = 1)
+        self.grid_columnconfigure(0, weight = 1)
+
+    def LoadTable(self,line):
+        self.treeview.insert('', 'end', text=line[0], values=(line[1:6]))
+    def onClick(self, event):
+        ''' Executed, when a row is clicked.'''
+        print('d5al')
+
+        # what row and column was clicked on
+        rowid = self.treeview.identify_row(event.y)
+        column = self.treeview.identify_column(event.x)
+        self.row = int(rowid[2:sys.getsizeof(rowid)])
+        # clicked row parent id
+        parent = self.treeview.parent(rowid)
+        print(rowid+column)
+        doplot(event)
+
+
+def removeuserdatabase():
+    global w
+    selection = w.Scrolledlistbox6.curselection()
+    pos = 0
+    for i in selection:
+        idx = int(i) - pos
+        w.Scrolledlistbox6.delete(idx, idx)
+        pos = pos + 1
+    sys.stdout.flush()
+
+def selectuserdatabase():
+    global w
+    allInBox6 = getAllInListBox6()
+    filename = [w.Scrolledlistbox3.get(idx) for idx in w.Scrolledlistbox3.curselection()]
+    for l in filename:
+        if l not in allInBox6:
+            w.Scrolledlistbox6.insert('end', l)
+    sys.stdout.flush()
+
+def getAllInListBox6():
+    idx = 0
+    allInBox6 = []
+    while w.Scrolledlistbox6.get(idx):
+        allInBox6.append(w.Scrolledlistbox6.get(idx))
+        idx += 1
+    return allInBox6
+
+def upload_userdatabase():
+    global w
+    selected_files = filedialog.askopenfilenames()
+    for l in selected_files:
+        w.Scrolledlistbox3.insert('end', l)
+    sys.stdout.flush()
+
+
 
 def allrnaselection():
-    global alltrnas, Archaeal, Bacterial, Eukaryotic
+    global alltrnas, Archaeal, Bacterial, Eukaryotic, w
+    # codes = {
+    #     1 : u"\u00B9",
+    #     2 : u"\u00B2",
+    #     3 : u"\u00B3",
+    #     4 : u"\u2074",
+    #     5 : u"\u2075",
+    #     6 : u"\u2076",
+    #     7 : u"\u2077"
+    # }
+    # ALLtyprRNA_selected_files = ["m1A", "m2A", "m6A", "Am", "ms2m6A", "i6A", "ms2i6A", "io6A", "ms2io6A", "g6A", "t6A", "ms2t6A", "m6t6A",
+    #                   "hn6A", "ms2hn6A", "Ar(p)", "I", "m1I", "m1Im", "m3C", "m5C", "Cm", "s2C", "ac4C", "f5C", "m5Cm", "ac4Cm",
+    #                   "k2C", "m1G", "m2G", "m7G", "Gm", "m22G", "m2Gm", "m22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
+    #                   "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03A8', "D", "m5U", "Um", "m5Um", "m1\u03A8", "\u03A8m",
+    #                   "s2U", "s4U", "m5s2U", "s2Um", "acp3U", "ho5U", "mo5U", "cmo5U", "mcmo5U", "chm5U", "mchm5U", "mcm5U", "mcm5Um",
+    #                   "mcm5s2U", "nm5s2U", "mnm5U", "mnm5s2U", "mnm5se2U", "ncm5U", "ncm5Um", "cmnm5U", "cmnm5Um", "cmnm5s2U", "m62A",
+    #                   "Im", "m4C", "m4Cm", "hm5C", "m3U", "m1acp3\u03A8", "cm5U", "m6Am", "m62Am", "m2,7G", "m2,2,7G", "m3Um", "m5D",
+    #                   "m3\u03A8", "f5Cm", "m1Gm", "m1Am", "\u03C4m5U", "\u03C4m5s2U", "imG-14", "imG2", "ac6A", "inm5U", "inm5s2U",
+    #                   "inm5Um", "m2,7Gm", "m42Cm", "C+", "m8A", "gmnm5s2U", "gcmnm5s2U", "cnm5U"]
+
+    modification_all = ["m1A", "m2A", "m6A", "Am", "ms2m6A", "i6A", "ms2i6A", "io6A", "ms2io6A", "g6A", "t6A", "ms2t6A", "m6t6A",
+                      "hn6A", "ms2hn6A", "Ar(p)", "I", "m1I", "m1Im", "m3C", "m5C", "Cm", "s2C", "ac4C", "f5C", "m5Cm", "ac4Cm",
+                      "k2C", "m1G", "m2G", "m7G", "Gm", "m22G", "m2Gm", "m22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
+                      "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03A8', "D", "m5U", "Um", "m5Um", "m1\u03A8",
+                      "\u03A8m", "s2U", "s4U", "m5s2U", "s2Um", "acp3U", "ho5U", "mo5U", "cmo5U", "mcmo5U", "chm5U", "mchm5U",
+                      "mcm5U", "mcm5Um", "mcm5s2U", "nm5s2U", "mnm5U", "mnm5s2U", "mnm5se2U", "ncm5U", "ncm5Um", "cmnm5U", "cmnm5Um",
+                      "cmnm5s2U", "m62A", "Im", "m4C", "m4Cm", "hm5C", "m3U", "m1acp3\u03A8", "cm5U", "m3\u03A8", "f5Cm", "m1Gm",
+                      "m1Am", "\u03C4m5U", "\u03C4m5s2U", "imG-14", "imG2", "ac6A", "inm5U", "inm5s2U", "inm5Um", "m2,7Gm", "m42Cm", "C+"]
+
+    modification_archaea = ["m1A", "m2A", "m6A", "Am", "t6A", "ms2t6A", "hn6A", "ms2hn6A", "I", "m1I", "m1Im",
+                            "m5C", "Cm", "s2C", "ac4C", "m5Cm", "ac4Cm", "m1G", "m2G", "m7G", "Gm", "m22G",
+                            "m2Gm", "m22Gm", "imG", "mimG", "G+", u'\u03A8', "D", "m5U", "Um", "m1\u03A8",
+                            "\u03A8m", "s2U", "s4U", "m5s2U", "s2Um", "mnm5s2U", "mnm5se2U", "m62A", "m3U",
+                            "m1Gm", "imG-14", "imG2", "ac6A", "m2,7Gm", "m42Cm", "C+"]
+
+    modification_bacteria = ["m1A", "m2A", "m6A", "Am", "ms2m6A", "i6A", "ms2i6A", "t6A", "ms2t6A", "m6t6A",
+                             "hn6A", "ms2hn6A", "I", "m3C", "Cm", "s2C", "ac4C", "k2C", "m1G", "m7G", "Gm", "Q", "oQ",
+                             "preQ0", "preQ1", u'\u03A8', "D", "m5U", "Um", "s2U", "s4U", "m5s2U", "acp3U", "ho5U",
+                             "mo5U", "cmo5U", "mcmo5U", "nm5s2U", "mnm5U", "mnm5s2U", "mnm5se2U", "cmnm5U", "cmnm5Um",
+                             "cmnm5s2U", "m62A", "m4Cm", "m3U", "m3\u03A8", "inm5U", "inm5s2U", "inm5Um"]
+
+    modification_eukarya = ["m1A", "Am", "i6A", "io6A", "ms2io6A", "g6A", "t6A", "ms2t6A", "Ar(p)", "I", "m1I", "m3C",
+                            "m5C", "Cm", "ac4C", "f5C", "m1G", "m2G", "m7G", "Gm", "m22G", "Gr(p)", "yW", "o2yW", "OHyW",
+                            "OHyW*", "imG", "Q", "galQ", "manQ", u'\u03A8', "D", "m5U", "Um", "m5Um", "\u03A8m", "s2U",
+                            "m5s2U", "ho5U", "chm5U", "mchm5U", "mcm5U", "mcm5Um", "mcm5s2U", "ncm5U", "ncm5Um", "cmnm5U",
+                            "m62A", "Im", "m4C", "hm5C", "m3U", "m1acp3\u03A8", "cm5U", "f5Cm", "m1Am", "\u03C4m5U", "\u03C4m5s2U"]
+
+    w.Scrolledlistbox4.delete(0, END)
+    w.Scrolledlistbox5.delete(0, END)
     if alltrnas.get() == 1:
+        for l in modification_all:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 1 and Bacterial.get() == 0 and Eukaryotic.get() == 0:
+        alltrnas.set(0)
+        Archaeal.set(1)
+        Bacterial.set(0)
+        Eukaryotic.set(0)
+        for l in modification_archaea:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 0 and Bacterial.get() == 1 and Eukaryotic.get() == 0:
+        alltrnas.set(0)
+        Archaeal.set(0)
+        Bacterial.set(1)
+        Eukaryotic.set(0)
+        for l in modification_bacteria:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 0 and Bacterial.get() == 0 and Eukaryotic.get() == 1:
+        alltrnas.set(0)
+        Archaeal.set(0)
+        Bacterial.set(0)
+        Eukaryotic.set(1)
+        for l in modification_eukarya:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 1 and Bacterial.get() == 1 and Eukaryotic.get() == 0:
+        alltrnas.set(0)
         Archaeal.set(1)
         Bacterial.set(1)
+        Eukaryotic.set(0)
+        modification_combo = modification_archaea
+        modification_combo.extend(modification_bacteria)
+        for l in modification_combo:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 1 and Bacterial.get() == 0 and Eukaryotic.get() == 1:
+        alltrnas.set(0)
+        Archaeal.set(1)
+        Bacterial.set(0)
         Eukaryotic.set(1)
-    else:
+        modification_combo = modification_archaea
+        modification_combo.extend(modification_eukarya)
+        for l in modification_combo:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 0 and Bacterial.get() == 1 and Eukaryotic.get() == 1:
+        alltrnas.set(0)
+        Archaeal.set(0)
+        Bacterial.set(1)
+        Eukaryotic.set(1)
+        modification_combo = modification_bacteria
+        modification_combo.extend(modification_eukarya)
+        for l in modification_combo:
+            w.Scrolledlistbox4.insert('end', l)
+    elif Archaeal.get() == 1 and Bacterial.get() == 1 and Eukaryotic.get() == 1:
+        alltrnas.set(1)
+        for l in modification_all:
+            w.Scrolledlistbox4.insert('end', l)
+    elif alltrnas.get() == 0 and Archaeal.get() == 0 and Bacterial.get() == 0 and Eukaryotic.get() == 0:
+        alltrnas.set(0)
         Archaeal.set(0)
         Bacterial.set(0)
         Eukaryotic.set(0)
+    w.Scrolledlistbox4.bind('<<ListboxSelect>>', CurSelect)
     sys.stdout.flush()
 
 def removemodification():
     global w
-    selection = w.Scrolledlistbox3.curselection()
+    selection = w.Scrolledlistbox5.curselection()
     pos = 0
     for i in selection:
         idx = int(i) - pos
-        w.Scrolledlistbox3.delete(idx, idx)
+        w.Scrolledlistbox5.delete(idx, idx)
         pos = pos + 1
     sys.stdout.flush()
 
-def getAllInListBox3():
+def getAllInListBox5():
     idx = 0
-    allInBox3 = []
-    while w.Scrolledlistbox3.get(idx):
-        allInBox3.append(w.Scrolledlistbox3.get(idx))
+    allInBox5 = []
+    while w.Scrolledlistbox5.get(idx):
+        allInBox5.append(w.Scrolledlistbox5.get(idx))
         idx += 1
-    return allInBox3
+    return allInBox5
 
 def selectmodification():
     global w
-    allInBox3 = getAllInListBox3()
-    filename = [w.Scrolledlistbox2.get(idx) for idx in w.Scrolledlistbox2.curselection()]
+    allInBox5 = getAllInListBox5()
+    filename = [w.Scrolledlistbox4.get(idx) for idx in w.Scrolledlistbox4.curselection()]
     for l in filename:
-        if l not in allInBox3:
-            w.Scrolledlistbox3.insert('end', l)
+        if l not in allInBox5:
+            w.Scrolledlistbox5.insert('end', l)
     sys.stdout.flush()
 
 def adductselection():
@@ -235,11 +459,25 @@ def Read_mzMLfile():
     canvas.show()
     canvas.get_tk_widget().pack(side='bottom', fill='both', expand=True)
     sys.stdout.flush()
-    sys.stdout.flush()
+
 
 
 def processdata():
-    global w, msmode_selection, Archaeal, Bacterial, Eukaryotic, alltrnas, Hplus, plus, Naplus, NH4plus, Kplus, H2OplusHplus, C2H4Nplus, C2H3N1Naplus, Ptplus, Hminus, minus, Clminus, minusH2OHminus, H2Naminus, wion, xion, yion, zion, aion, bion, cion, dion, aBion
+    global w, msmode_selection, Archaeal, Bacterial, Eukaryotic, alltrnas, Hplus, plus, Naplus, NH4plus, Kplus, \
+        H2OplusHplus, C2H4Nplus, C2H3N1Naplus, Ptplus, Hminus, minus, Clminus, minusH2OHminus, H2Naminus, wion, \
+        xion, yion, zion, aion, bion, cion, dion, aBion, allbase, ABase, CBase, GBase, UBase, RNASource_selection, \
+        enzyme_selection, output_infor
+
+    def dfs(temp_no, start, res):
+        if start == no_base:
+            temp_modi_mw = oligo_mw + sum([float(y[0]) for y in res])
+            if abs(temp_modi_mw - temp_mw)/temp_mw <= mz_var * 10 ** -6:
+                all_modi_infor.append([res, temp_modi_mw])
+            return
+        for x in modi_base_mz_info[temp_no[start]]:
+            res.append(x)
+            dfs(temp_no, start + 1, res)
+            res.pop()
     con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
     adduct_ions = {'H+': [1.00727645207, 'Positive'],
                    '+': [-0.00054858, 'Positive'],
@@ -257,6 +495,150 @@ def processdata():
                    'Cl-': [34.96940126, 'Negative'],
                    '-H2O-H-': [-19.01784113577, 'Negative'],
                    '-2H+Na-': [20.97466779676, 'Negative']}  # 0 to 10 are positive mode, 11 to 15 are negative mode
+
+    iso_map = {'C': [12.0, 13.0033548378],
+               'H': [1.00782503207, 2.0141017778],
+               'O': [15.99491461956, 16.99913170, 17.9991610],
+               'N': [14.0030740048, 15.0001088982],
+               'S': [31.972071, 32.97145876, 33.96786690, 35.96708076],
+               'P': [30.97376163],
+               'Na': [22.9897692809],
+               'K': [38.96370668, 39.96399848, 40.96182576]}
+
+    RNA_A = {'C': 5, 'H': 5, 'N': 5}
+    RNA_U = {'C': 4, 'H': 4, 'N': 2, 'O': 2}
+    RNA_G = {'C': 5, 'H': 5, 'N': 5, 'O': 1}
+    RNA_C = {'C': 4, 'H': 5, 'N': 3, 'O': 1}
+    RNA_constant = {'C': 5, 'H': 8, 'O': 6, 'P': 1}
+    mz_A = 0
+    for key, value in RNA_A.items():
+        mz_A += value * iso_map[key][0]
+    mz_U = 0
+    for key, value in RNA_U.items():
+        mz_U += value * iso_map[key][0]
+    mz_G = 0
+    for key, value in RNA_G.items():
+        mz_G += value * iso_map[key][0]
+    mz_C = 0
+    for key, value in RNA_C.items():
+        mz_C += value * iso_map[key][0]
+    mz_constant = 0
+    for key, value in RNA_constant.items():
+        mz_constant += value * iso_map[key][0]
+
+    modification_info = {"m1A": ['A', 'C1H2', 14.015650064140000, 'All'],
+                        "m2A": ['A', 'C1H2', 14.015650064140000, 'Archaea', 'Bacteria'],
+                        "m6A": ['A', 'C1H2', 14.015650064140000, 'Archaea', 'Bacteria'],
+                        "Am": ['A', 'C1H2', 14.015650064140000, 'All'],
+                        "ms2m6A": ['A', 'C2H4S1', 60.003371128280000, 'Bacteria'],
+                        "i6A": ['A', 'C5H8', 68.062600256560000, 'Bacteria', 'Eukarya'],
+                        "ms2i6A": ['A', 'C6H10S1', 114.0503213207000, 'Bacteria'],
+                        "io6A": ['A', 'C5H8O1', 84.057514876120000, 'Eukarya'],
+                        "ms2io6A": ['A', 'C6H10O1S1', 130.0452359402600, 'Eukarya'],
+                        "g6A": ['A', 'C3H3N1O3', 101.0112929596900, 'Eukarya'],
+                        "t6A": ['A', 'C5H7N1O4', 145.0375077075300, 'All'],
+                        "ms2t6A": ['A', 'C6H9N1O4S1', 191.0252287716700, 'All'],
+                        "m6t6A": ['A', 'C6H9N1O4', 159.0531577716700, 'Bacteria'],
+                        "hn6A": ['A', 'C6H9N1O4', 159.0531577716700, 'Archaea', 'Bacteria'],
+                        "ms2hn6A": ['A', 'C7H11N1O4S1', 205.0408788358100, 'Archaea', 'Bacteria'],
+                        "Ar(p)": ['A', 'C5H9O7P1', 212.0085892555500, 'Eukarya'],
+                        "I": ['G', '-N1H1', -15.010899036870000, 'All'],
+                        "m1I": ['G', '-N1H1+C1H2', -0.995248972730000, 'Archaea', 'Eukarya'],
+                        "m1Im": ['G', '-N1H1+C2H4', 13.020401091410001, 'Archaea'],
+                        "m3C": ['C', 'C1H2', 14.015650064140000, 'Bacteria', 'Eukarya'],
+                        "m5C": ['C', 'C1H2', 14.015650064140000, 'Archaea', 'Eukarya'],
+                        "Cm": ['C', 'C1H2', 14.015650064140000, 'All'],
+                        "s2C": ['C', '-O1+S1', 15.977156380440000, 'Archaea', 'Bacteria'],
+                        "ac4C": ['C', 'C2H2O1', 42.010564683700000, 'All'],
+                        "f5C": ['C', 'C1H1O1', 29.002739651630000, 'Eukarya'],
+                        "m5Cm": ['C', 'C2H4', 28.031300128280000, 'Archaea'],
+                        "ac4Cm": ['C', 'C3H4O1', 56.026214747840000, 'Archaea'],
+                        "k2C": ['C', '-O1+C6H14N2O2', 130.1106130781400, 'Bacteria'],
+                        "m1G": ['G', 'C1H2', 14.015650064140000, 'All'],
+                        "m2G": ['G', 'C1H2', 14.015650064140000, 'Archaea', 'Eukarya'],
+                        "m7G": ['G', 'C1H2', 14.015650064140000, 'All'],
+                        "Gm": ['G', 'C1H2', 14.015650064140000, 'All'],
+                        "m22G": ['G', 'C2H4', 28.031300128280000, 'Archaea', 'Eukarya'],
+                        "m2Gm": ['G', 'C2H4', 28.031300128280000, 'Archaea'],
+                        "m22Gm": ['G', 'C3H6', 42.046950192420000, 'Archaea'],
+                        "Gr(p)": ['G', 'C5H9O7P1', 212.0085892555500, 'Eukarya'],
+                        "yW": ['G', '-H2+C11H17N1O4', 225.1001079640900, 'Eukarya'],
+                        "o2yW": ['G', '-H2+C11H17N1O6', 257.0899372032100, 'Eukarya'],
+                        "OHyW": ['G', '-H2+C11H17N1O5', 241.0950225836500, 'Eukarya'],
+                        "OHyW*": ['G', '-H2+C8H13N1O3', 169.0738932162500, 'Eukarya'],
+                        "imG": ['G', '-H3+C4H7', 52.031300128280000, 'Archaea', 'Eukarya'],
+                        "mimG": ['G', '-H3+C5H9', 66.046950192420000, 'Archaea'],
+                        "Q": ['G', '-N1+C7H10N1O2', 126.0680795598200, 'Bacteria', 'Eukarya'],
+                        "oQ": ['G', '-N1+C7H10N1O3', 142.0629941793800, 'Bacteria'],
+                        "galQ": ['G', '-N1+C13H20N1O7', 288.1209029783200, 'Eukarya'],
+                        "manQ": ['G', '-N1+C13H20N1O7', 288.1209029783200, 'Eukarya'],
+                        "preQ0": ['G', '-N1+C2N1', 24, 'Bacteria'],
+                        "preQ1": ['G', '-N1+C2H4N1', 28.031300128280000, 'Bacteria'],
+                        "G+": ['G', '-N1+C2H3N2', 41.026549101010005, 'Archaea'],
+                        u'\u03A8': ['U', '', 0, 'All'],
+                        "D": ['U', 'H2', 2.015650064140000, 'All'],
+                        "m5U": ['U', 'C1H2', 14.015650064140000, 'All'],
+                        "Um": ['U', 'C1H2', 14.015650064140000, 'All'],
+                        "m5Um": ['U', 'C2H4', 28.031300128280000, 'Eukarya'],
+                        "m1\u03A8": ['U', 'C1H2', 14.015650064140000, 'Archaea'],
+                        "\u03A8m": ['U', 'C1H2', 14.015650064140000, 'Archaea', 'Eukarya'],
+                        "s2U": ['U', '-O1+S1', 15.977156380440000, 'All'],
+                        "s4U": ['U', '-O1+S1', 15.977156380440000, 'Archaea', 'Bacteria'],
+                        "m5s2U": ['U', '-O1+S1C1H2', 29.992806444579998, 'All'],
+                        "s2Um": ['U', '-O1+S1C1H2', 29.992806444579998, 'Archaea'],
+                        "acp3U": ['U', 'C4H7N1O2', 101.0476784684100, 'Bacteria'],
+                        "ho5U": ['U', 'O1', 15.994914619560000, 'Bacteria', 'Eukarya'],
+                        "mo5U": ['U', 'C1H2O1', 30.010564683700000, 'Bacteria'],
+                        "cmo5U": ['U', 'C2H2O3', 74.000393922820000, 'Bacteria'],
+                        "mcmo5U": ['U', 'C3H4O3', 88.016043986960000, 'Bacteria'],
+                        "chm5U": ['U', 'C2H2O3', 74.000393922820000, 'Eukarya'],
+                        "mchm5U": ['U', 'C3H4O3', 88.016043986960000, 'Eukarya'],
+                        "mcm5U": ['U', 'C3H4O2', 72.021129367400000, 'Eukarya'],
+                        "mcm5Um": ['U', 'C4H6O2', 86.036779431540000, 'Eukarya'],
+                        "mcm5s2U": ['U', '-O1+C3H4O2S1', 87.998285747839990, 'Eukarya'],
+                        "nm5s2U": ['U', '-O1+C1H3N1S1', 45.003705481450000, 'Bacteria'],
+                        "mnm5U": ['U', 'C2H5N1', 43.042199165150000, 'Bacteria'],
+                        "mnm5s2U": ['U', '-O1+C2H5N1S1', 59.019355545590010, 'Archaea', 'Bacteria'],
+                        "mnm5se2U": ['U', '-O1+C2H5N1Se1', 100.9697609455900, 'Archaea', 'Bacteria'],
+                        "ncm5U": ['U', 'C2H3N1O1', 57.021463720570000, 'Eukarya'],
+                        "ncm5Um": ['U', 'C3H5N1O1', 71.037113784709990, 'Eukarya'],
+                        "cmnm5U": ['U', 'C3H5N1O2', 87.032028404270000, 'Bacteria', 'Eukarya'],
+                        "cmnm5Um": ['U', 'C4H7N1O2', 101.0476784684100, 'Bacteria'],
+                        "cmnm5s2U": ['U', '-O1+C3H5N1O2S1', 103.0091847847100, 'Bacteria'],
+                        "m62A": ['A', 'C2H4', 28.031300128280000, 'All'],
+                        "Im": ['G', '-N1H1+C1H2', -0.995248972730000, 'Eukarya'],
+                        "m4C": ['C', 'C1H2', 14.015650064140000, 'Eukarya'],
+                        "m4Cm": ['C', 'C2H4', 28.031300128280000, 'Bacteria'],
+                        "hm5C": ['C', 'C1H2O1', 30.010564683700000, 'Eukarya'],
+                        "m3U": ['U', 'C1H2', 14.015650064140000, 'All'],
+                        "m1acp3\u03A8": ['U', 'C5H9N1O2', 115.0633285325500, 'Eukarya'],
+                        "cm5U": ['U', 'C2H2O2', 58.005479303260000, 'Eukarya'],
+                        "m6Am": ['A', 'C2H4', 28.031300128280000, ''],
+                        "m62Am": ['A', 'C3H6', 42.046950192420000, ''],
+                        "m2,7G": ['G', 'C2H4', 28.031300128280000, ''],
+                        "m2,2,7G": ['G', 'C3H6', 42.046950192420000, ''],
+                        "m3Um": ['U', 'C2H4', 28.031300128280000, ''],
+                        "m5D": ['U', 'C1H4', 14.015650064140000, ''],
+                        "m3\u03A8": ['U', 'C1H2', 14.015650064140000, 'Bacteria'],
+                        "f5Cm": ['C', 'C2H2O1', 42.010564683700000, 'Eukarya'],
+                        "m1Gm": ['G', 'C2H4', 28.031300128280000, 'Archaea'],
+                        "m1Am": ['A', 'C2H4', 28.031300128280000, 'Eukarya'],
+                        "\u03C4m5U": ['U', 'C3H7N1O3S1', 137.0146640879700, 'Eukarya'],
+                        "\u03C4m5s2U": ['U', '-O1+C3H7N1O3S2', 152.9918204684100, 'Eukarya'],
+                        "imG-14": ['G', '-H3+C3H5', 38.015650064140000, 'Archaea'],
+                        "imG2": ['G', '-H3+C4H7', 52.031300128280000, 'Archaea'],
+                        "ac6A": ['A', 'C2H2O1', 42.010564683700000, 'Archaea'],
+                        "inm5U": ['U', 'C6H11N1', 97.089149357570000, 'Bacteria'],
+                        "inm5s2U": ['U', '-O1+C6H11N1', 81.094234738009990, 'Bacteria'],
+                        "inm5Um": ['U', 'C7H13N1', 111.1047994217100, 'Bacteria'],
+                        "m2,7Gm": ['G', 'C3H6', 42.046950192420000, 'Archaea'],
+                        "m42Cm": ['C', 'C3H6', 42.046950192420000, 'Archaea'],
+                        "C+": ['C', '-O1+C5H12N3', 98.108207779679990, 'Archaea'],
+                        "m8A": ['A', 'C1H2', 14.015650064140000, ''],
+                        "gmnm5s2U": ['U', '-H1O1+C12H21N1S1', 194.1367310266400, ''],
+                        "gcmnm5s2U": ['U', '-H1O1+C13H21N1O2S1', 238.1265602657600, ''],
+                        "cnm5U": ['U', 'C2H1N1', 39.010899036870000, '']}
+    ####read the .mzML file
     filename = [w.Scrolledlistbox1.get(idx) for idx in w.Scrolledlistbox1.curselection()]
     result = pymzml.run.Reader(filename[0], extraAccessions=[('MS:1000827', ['value'])])
     data_all = []
@@ -283,9 +665,24 @@ def processdata():
                 fullmsSpectra['sn'].append(temp_scan)
                 fullmsSpectra['rt'].append(temp_rt)
                 fullmsSpectra['Spectra'].append(temp_spec)
+
+##RNA source selection
+    if RNASource_selection.get() == 1:
+        RNASource = 'tRNA'
+    elif RNASource_selection.get() == 2:
+        RNASource = 'rRNA'
+    elif RNASource_selection.get() == 3:
+        RNASource = 'mRNA'
+    elif RNASource_selection.get() == 4:
+        RNASource = 'tmRNA'
+    elif RNASource_selection.get() == 5:
+        RNASource = 'snRNA'
+    elif RNASource_selection.get() == 6:
+        RNASource = 'ChromosomalRNA'
+    elif RNASource_selection.get() == 7:
+        RNASource = ''
+### adduct ion selection
     adduct_set = []
-    dababase_set = []
-    fragion_set = []
     if msmode_selection.get() == 1:
         if Hplus.get() == 1:
             adduct_set.append('H+')
@@ -317,179 +714,1003 @@ def processdata():
         if H2Naminus.get() == 1:
             adduct_set.append('-2H+Na-')
 
+## phylogenetic occurrence
     if alltrnas.get() == 1:
-        dababase_set.append('all-trnas.fa')
+        Phyloccur_set = ['all']
     else:
+        Phyloccur_set = []
         if Bacterial.get() == 1:
-            dababase_set.append('bacterial-trnas.fa')
+            Phyloccur_set.append('bacterial')
         if Eukaryotic.get() == 1:
-            dababase_set.append('eukaryotic-trnas.fa')
+            Phyloccur_set.append('eukaryotic')
         if Archaeal.get() == 1:
-            dababase_set.append('archaeal-trnas.fa')
+            Phyloccur_set.append('archaeal')
+
+### fragment ion selection
+    fragion_set = {}
     if wion.get() == 1:
-        fragion_set.append('w')
+        fragion_set['w'] = 2
     if xion.get() == 1:
-        fragion_set.append('x')
+        fragion_set['x'] = 2
     if yion.get() == 1:
-        fragion_set.append('y')
+        fragion_set['y'] = 2
     if zion.get() == 1:
-        fragion_set.append('z')
+        fragion_set['z'] = 2
     if aion.get() == 1:
-        fragion_set.append('a')
+        fragion_set['a'] = 1
     if bion.get() == 1:
-        fragion_set.append('b')
+        fragion_set['b'] = 1
     if cion.get() == 1:
-        fragion_set.append('c')
+        fragion_set['c'] = 1
     if dion.get() == 1:
-        fragion_set.append('d')
+        fragion_set['d'] = 1
     if aBion.get() == 1:
-        fragion_set.append('a-B')
+        fragion_set['a-B'] = 1
 
-    parent_mz = msmsSpectra['parent_mz']
-    for idx, mz in enumerate(parent_mz):
-        temp_sn = msmsSpectra['parent_sn'][idx]
-        temp_msspec = fullmsSpectra['Spectra'][fullmsSpectra['sn'].index(temp_sn)]
-        temp_mz = [x[0] for x in temp_msspec]
-        # temp_int = [x[-1] for x in temp_msspec]
-        temp_idx = min(enumerate(temp_mz), key=lambda x: abs(x[1] - mz))
-        diff_mz1 = temp_idx[1] - temp_mz[temp_idx[0] - 1]
-        diff_mz2 = temp_mz[temp_idx[0] + 1] - temp_idx[1]
-        if (diff_mz1 >= 0.9 and diff_mz1 < 1.1) or (diff_mz2 >= 0.9 and diff_mz2 < 1.1):
-            charge = 1
-        elif (diff_mz1 < 0.6 and diff_mz1 >= 0.5) or (diff_mz2 < 0.6 and diff_mz2 >= 0.5):
-            charge = 2
-        elif (diff_mz1 < 0.4 and diff_mz1 >= 0.3) or (diff_mz2 < 0.4 and diff_mz2 >= 0.3):
-            charge = 3
+### modificated base selection
+    if allbase.get() == 1:
+        modifi_base_set = ['A', 'U', 'G', 'C']
+    else:
+        modifi_base_set = []
+        if ABase.get() == 1:
+            modifi_base_set.append('A')
+        if CBase.get() == 1:
+            modifi_base_set.append('U')
+        if GBase.get() == 1:
+            modifi_base_set.append('G')
+        if UBase.get() == 1:
+            modifi_base_set.append('C')
+
+### modification_list
+    modifi_list = getAllInListBox5()
+    modi_base_mz_info = collections.defaultdict(list)
+    for temp_modi in modifi_list:
+        temp_modi_infor = modification_info[temp_modi]
+        modi_mw = temp_modi_infor[2]
+        modi_base = temp_modi_infor[0]
+        if modi_base in modifi_base_set:
+            modi_base_mz_info[modi_base].append([modi_mw, temp_modi])
+    max_mw = collections.defaultdict(list)
+    for modi_base in modi_base_mz_info:
+        modi_base_mz_info[modi_base].append([0, 'None'])
+        temp_value = modi_base_mz_info[modi_base]
+        max_mw[modi_base] = max([float(x[0]) for x in temp_value])
+    # modi_base_combin_info = collections.defaultdict(list)
+    # for modi_base in modi_base_mz_info:
+    #     temp_value = modi_base_mz_info[modi_base]
+    #     l = [x for x in range(len(temp_value))]
+    #     temp_combin = []
+    #     for i in range(1, len(temp_value)+1):
+    #         temp1_combin = list(itertools.combinations(l, i))
+    #         temp_combin.extend(temp1_combin)
+    #     modi_base_combin_info[modi_base] = temp_combin
+
+### user defined database
+    user_rnalist = getAllInListBox6()
+    # if user_rnalist:
+
+
+    ### get the table name in RNA database
+    DB_name = {'OriRNA': '', 'RNA': '', 'RNA_large_KN': '', 'AllOligos': '', 'UniOligos': ''}
+    if RNASource == 'tRNA':
+        if 'all' in Phyloccur_set:
+            DB_name['OriRNA'] = 'Ori_tRNA'
+            DB_name['RNA'] = 'tRNA'
+            DB_name['RNA_large_KN'] = 'tRNA_large_KN'
+            if enzyme_selection.get() == 1:  # T1
+                DB_name['AllOligos'] = 'tRNA_AllOligos_T1'
+                DB_name['UniOligos'] = 'tRNA_UniOligos_T1'
+            elif enzyme_selection.get() == 2:  # A
+                DB_name['AllOligos'] = 'tRNA_AllOligos_A'
+                DB_name['UniOligos'] = 'tRNA_UniOligos_A'
         else:
-            charge = 1
-        for add_ion in adduct_set:
-            temp_mw = temp_idx[1]*charge + charge*adduct_ions[add_ion][0]
-            with con:
-                cur = con.cursor()
-                lower_bound = temp_mw * (1 - 5*10**-6)
-                uper_bound = temp_mw * (1 + 5*10**-6)
-                # query to get mz vs #sequence
-                cur.execute("select * from uni_two_oligos where MW >= {0} and MW <= {1}".format(lower_bound, uper_bound))
-                temp_info = cur.fetchall()
-            for idx, line in enumerate(temp_info):
-                oligo_id = line[0]
-                oligo_seq = line[1]
-                oligo_type = line[2]
-                No_letter = line[3:]
+            temp_orirna = []
+            temp_rna = []
+            temp_rnalargekn = []
+            temp_occur_alloligos = []
+            temp_occur_unioligos = []
+            for occur in Phyloccur_set:
+                temp_orirna.append('Ori_tRNA_' + occur)
+                temp_rna.append('tRNA_' + occur)
+                temp_rnalargekn.append('tRNA_large_KN_' + occur)
+                if enzyme_selection.get() == 1:  # T1
+                    temp_occur_alloligos.append('tRNA_AllOligos_' + occur + '_T1')
+                    temp_occur_unioligos.append('tRNA_UniOligos_' + occur + '_T1')
+                elif enzyme_selection.get() == 2:  # A
+                    temp_occur_alloligos.append('tRNA_AllOligos_' + occur + '_A')
+                    temp_occur_unioligos.append('tRNA_UniOligos_' + occur + '_A')
+            DB_name['OriRNA'] = temp_orirna
+            DB_name['RNA'] = temp_rna
+            DB_name['RNA_large_KN'] = temp_rnalargekn
+            DB_name['AllOligos'] = temp_occur_alloligos
+            DB_name['UniOligos'] = temp_occur_unioligos
+    elif RNASource == 'mRNA':
+        if 'all' in Phyloccur_set:
+            DB_name['OriRNA'] = 'Ori_mRNA'
+            DB_name['RNA'] = 'mRNA'
+            DB_name['RNA_large_KN'] = 'mRNA_large_KN'
+            if enzyme_selection.get() == 1:  # T1
+                DB_name['AllOligos'] = 'mRNA_AllOligos_T1'
+                DB_name['UniOligos'] = 'mRNA_UniOligos_T1'
+            elif enzyme_selection.get() == 2:  # A
+                DB_name['AllOligos'] = 'mRNA_AllOligos_A'
+                DB_name['UniOligos'] = 'mRNA_UniOligos_A'
+        else:
+            temp_orirna = []
+            temp_rna = []
+            temp_rnalargekn = []
+            temp_occur_alloligos = []
+            temp_occur_unioligos = []
+            for occur in Phyloccur_set:
+                temp_orirna.append('Ori_mRNA_' + occur)
+                temp_rna.append('mRNA_' + occur)
+                temp_rnalargekn.append('mRNA_large_KN_' + occur)
+                if enzyme_selection.get() == 1:  # T1
+                    temp_occur_alloligos.append('mRNA_AllOligos_' + occur + '_T1')
+                    temp_occur_unioligos.append('mRNA_UniOligos_' + occur + '_T1')
+                elif enzyme_selection.get() == 2:  # A
+                    temp_occur_alloligos.append('mRNA_AllOligos_' + occur + '_A')
+                    temp_occur_unioligos.append('mRNA_UniOligos_' + occur + '_A')
+            DB_name['OriRNA'] = temp_orirna
+            DB_name['RNA'] = temp_rna
+            DB_name['RNA_large_KN'] = temp_rnalargekn
+            DB_name['AllOligos'] = temp_occur_alloligos
+            DB_name['UniOligos'] = temp_occur_unioligos
+    elif RNASource == 'tmRNA':
+        if 'all' in Phyloccur_set:
+            DB_name['OriRNA'] = 'Ori_tmRNA'
+            DB_name['RNA'] = 'tmRNA'
+            DB_name['RNA_large_KN'] = 'tmRNA_large_KN'
+            if enzyme_selection.get() == 1:  # T1
+                DB_name['AllOligos'] = 'tmRNA_AllOligos_T1'
+                DB_name['UniOligos'] = 'tmRNA_UniOligos_T1'
+            elif enzyme_selection.get() == 2:  # A
+                DB_name['AllOligos'] = 'tmRNA_AllOligos_A'
+                DB_name['UniOligos'] = 'tmRNA_UniOligos_A'
+        else:
+            temp_orirna = []
+            temp_rna = []
+            temp_rnalargekn = []
+            temp_occur_alloligos = []
+            temp_occur_unioligos = []
+            for occur in Phyloccur_set:
+                temp_orirna.append('Ori_tmRNA_' + occur)
+                temp_rna.append('tmRNA_' + occur)
+                temp_rnalargekn.append('tmRNA_large_KN_' + occur)
+                if enzyme_selection.get() == 1:  # T1
+                    temp_occur_alloligos.append('tmRNA_AllOligos_' + occur + '_T1')
+                    temp_occur_unioligos.append('tmRNA_UniOligos_' + occur + '_T1')
+                elif enzyme_selection.get() == 2:  # A
+                    temp_occur_alloligos.append('tmRNA_AllOligos_' + occur + '_A')
+                    temp_occur_unioligos.append('tmRNA_UniOligos_' + occur + '_A')
+            DB_name['OriRNA'] = temp_orirna
+            DB_name['RNA'] = temp_rna
+            DB_name['RNA_large_KN'] = temp_rnalargekn
+            DB_name['AllOligos'] = temp_occur_alloligos
+            DB_name['UniOligos'] = temp_occur_unioligos
+    elif RNASource == 'snRNA':
+        if 'all' in Phyloccur_set:
+            DB_name['OriRNA'] = 'Ori_snRNA'
+            DB_name['RNA'] = 'snRNA'
+            DB_name['RNA_large_KN'] = 'snRNA_large_KN'
+            if enzyme_selection.get() == 1:  # T1
+                DB_name['AllOligos'] = 'snRNA_AllOligos_T1'
+                DB_name['UniOligos'] = 'snRNA_UniOligos_T1'
+            elif enzyme_selection.get() == 2:  # A
+                DB_name['AllOligos'] = 'snRNA_AllOligos_A'
+                DB_name['UniOligos'] = 'snRNA_UniOligos_A'
+        else:
+            temp_orirna = []
+            temp_rna = []
+            temp_rnalargekn = []
+            temp_occur_alloligos = []
+            temp_occur_unioligos = []
+            for occur in Phyloccur_set:
+                temp_orirna.append('Ori_snRNA_' + occur)
+                temp_rna.append('snRNA_' + occur)
+                temp_rnalargekn.append('snRNA_large_KN_' + occur)
+                if enzyme_selection.get() == 1:  # T1
+                    temp_occur_alloligos.append('snRNA_AllOligos_' + occur + '_T1')
+                    temp_occur_unioligos.append('snRNA_UniOligos_' + occur + '_T1')
+                elif enzyme_selection.get() == 2:  # A
+                    temp_occur_alloligos.append('snRNA_AllOligos_' + occur + '_A')
+                    temp_occur_unioligos.append('snRNA_UniOligos_' + occur + '_A')
+            DB_name['OriRNA'] = temp_orirna
+            DB_name['RNA'] = temp_rna
+            DB_name['RNA_large_KN'] = temp_rnalargekn
+            DB_name['AllOligos'] = temp_occur_alloligos
+            DB_name['UniOligos'] = temp_occur_unioligos
+    elif RNASource == 'ChromosomalRNA':
+        if 'all' in Phyloccur_set:
+            DB_name['OriRNA'] = 'Ori_chroRNA'
+            DB_name['RNA'] = 'chroRNA'
+            DB_name['RNA_large_KN'] = 'chroRNA_large_KN'
+            if enzyme_selection.get() == 1:  # T1
+                DB_name['AllOligos'] = 'chroRNA_AllOligos_T1'
+                DB_name['UniOligos'] = 'chroRNA_UniOligos_T1'
+            elif enzyme_selection.get() == 2:  # A
+                DB_name['AllOligos'] = 'chroRNA_AllOligos_A'
+                DB_name['UniOligos'] = 'chroRNA_UniOligos_A'
+        else:
+            temp_orirna = []
+            temp_rna = []
+            temp_rnalargekn = []
+            temp_occur_alloligos = []
+            temp_occur_unioligos = []
+            for occur in Phyloccur_set:
+                temp_orirna.append('Ori_chroRNA_' + occur)
+                temp_rna.append('chroRNA_' + occur)
+                temp_rnalargekn.append('chroRNA_large_KN_' + occur)
+                if enzyme_selection.get() == 1:  # T1
+                    temp_occur_alloligos.append('chroRNA_AllOligos_' + occur + '_T1')
+                    temp_occur_unioligos.append('chroRNA_UniOligos_' + occur + '_T1')
+                elif enzyme_selection.get() == 2:  # A
+                    temp_occur_alloligos.append('chroRNA_AllOligos_' + occur + '_A')
+                    temp_occur_unioligos.append('chroRNA_UniOligos_' + occur + '_A')
+            DB_name['OriRNA'] = temp_orirna
+            DB_name['RNA'] = temp_rna
+            DB_name['RNA_large_KN'] = temp_rnalargekn
+            DB_name['AllOligos'] = temp_occur_alloligos
+            DB_name['UniOligos'] = temp_occur_unioligos
+    else:
+        DB_name['OriRNA'] = 'Ori_userRNA'
+        DB_name['RNA'] = 'userRNA'
+        DB_name['RNA_large_KN'] = 'userRNA_large_KN'
+        if enzyme_selection.get() == 1:  # T1
+            DB_name['AllOligos'] = 'userRNA_AllOligos_T1'
+            DB_name['UniOligos'] = 'userRNA_UniOligos_T1'
+        elif enzyme_selection.get() == 2:  # A
+            DB_name['AllOligos'] = 'userRNA_AllOligos_A'
+            DB_name['UniOligos'] = 'userRNA_UniOligos_A'
 
+### identification
+    idx = 0
+    modifi_select = []
+    while w.Scrolledlistbox5.get(idx):
+        modifi_select.append(w.Scrolledlistbox5.get(idx))
+        idx += 1
+
+    mz_var = int(w.Entry1.get())
+    parent_mz = msmsSpectra['parent_mz']
+    total_num_data = len(parent_mz)
+    output_infor = [] ##parent_mz, parent_MW, parent_rt, similarity score, Annotate_ID, spec_mz, spec_intensityMtx
+    theta_mz_charge = 0.003
+    for idx, mz in enumerate(parent_mz):
+        if idx % 1000 == 0:
+            print("processing data at {0}%".format(100.0 * idx / total_num_data))
+        temp_sn = msmsSpectra['parent_sn'][idx]
+        temp_rt = msmsSpectra['parent_rt'][idx]
+        temp_msspec = fullmsSpectra['Spectra'][fullmsSpectra['sn'].index(temp_sn)] # get the ms spectrum
+        temp_msspec_mz = [x[0] for x in temp_msspec]
+        temp_idx = [[id1, x] for id1, x in enumerate(temp_msspec_mz) if (abs(x - mz) / x) <= mz_var * 10 ** -6]
+        # temp_idx = min(enumerate(temp_mz), key=lambda x: abs(x[1] - mz)/x[1])
+        if temp_idx:
+            # get the charge
+            charge = 0
+            right = temp_idx[0][0] + 1
+            while right <= len(temp_msspec_mz)-1:
+                diff_mz1 = temp_msspec_mz[right] - temp_idx[0][1]
+                if diff_mz1 > 1 + theta_mz_charge:
+                    break
+                elif diff_mz1 < 1 + theta_mz_charge and diff_mz1 > 1 - theta_mz_charge:
+                    charge = 1
+                    break
+                elif diff_mz1 < 0.5 + theta_mz_charge and diff_mz1 > 0.5 - theta_mz_charge:
+                    charge = 2
+                    break
+                elif diff_mz1 < 1/3 + theta_mz_charge and diff_mz1 > 1/3 - theta_mz_charge:
+                    charge = 3
+                    break
+                elif diff_mz1 < 0.25 + theta_mz_charge and diff_mz1 > 0.25 - theta_mz_charge:
+                    charge = 4
+                    break
+                else:
+                    right += 1
+
+            if not charge:
+                left = temp_idx[0][0] - 1
+                while left >= 0:
+                    diff_mz2 = temp_idx[0][1] - temp_msspec_mz[left]
+                    if diff_mz2 > 1 + theta_mz_charge:
+                        break
+                    elif diff_mz2 < 1 + theta_mz_charge and diff_mz2 > 1 - theta_mz_charge:
+                        charge = 1
+                        break
+                    elif diff_mz2 < 0.5 + theta_mz_charge and diff_mz2 > 0.5 - theta_mz_charge:
+                        charge = 2
+                        break
+                    elif diff_mz2 < 1 / 3 + theta_mz_charge and diff_mz2 > 1 / 3 - theta_mz_charge:
+                        charge = 3
+                        break
+                    elif diff_mz2 < 0.25 + theta_mz_charge and diff_mz2 > 0.25 - theta_mz_charge:
+                        charge = 4
+                        break
+                    else:
+                        left -= 1
+
+            if charge:
+                # caculate the therotical fragment ions with modification
+                for add_ion in adduct_set:
+                    temp_mw = temp_idx[0][1] * charge - charge * adduct_ions[add_ion][0]
+                    with con:
+                        cur = con.cursor()
+                        uper_bound = temp_mw * (1 + mz_var * 10 ** -6)
+                        # query to get mz vs #sequence
+                        cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW <= {0}".format(uper_bound))
+                        temp_info1 = cur.fetchall()
+                    if temp_info1:
+                        for line1 in temp_info1:
+                            all_fragmention = []
+                            target_spec = []
+                            all_modi_infor = []
+                            oligo_id = line1[0]
+                            oligo_seq = line1[1]
+                            oligo_type = line1[2]
+                            oligo_mw = float(line1[3])
+                            if oligo_mw + sum([max_mw[x] for x in oligo_seq]) >= temp_mw(1 - mz_var * 10 ** -6):
+                                no_base = len(oligo_seq)
+                                # modi_base_mz_info
+                                temp_no = [x for x in oligo_seq]
+                                res = []
+                                start = 0
+                                dfs(temp_no, start, res)
+                                if all_modi_infor:
+                                    for infor1 in all_modi_infor:
+                                        temp_modi_infor = infor1[0]
+                                        for i, temp_letter in enumerate(oligo_seq):
+                                            if i != no_base - 1:
+                                                for j in fragion_set:
+                                                    if fragion_set[j] == 1:
+                                                        temp_fragion = j + str(i + 1)
+                                                        temp1 = oligo_seq[:i + 1]
+                                                        no_a = temp1.count('A')
+                                                        no_u = temp1.count('U')
+                                                        no_g = temp1.count('G')
+                                                        no_c = temp1.count('C')
+                                                        total_no = len(temp1)
+                                                        common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * \
+                                                                                                                                                     iso_map['H'][0]
+                                                        if j == 'a':
+                                                            #########phosphate group
+                                                            if oligo_type == '5Prime':
+                                                                temp_mz = common_mz + iso_map['H'][0]
+                                                            else:
+                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '5Prime':
+                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                        elif j == 'b':
+                                                            #########phosphate group
+                                                            if oligo_type == '5Prime':
+                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                            else:
+                                                                temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '5Prime':
+                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                        elif j == 'c':
+                                                            #########phosphate group
+                                                            if oligo_type == '5Prime':
+                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                            else:
+                                                                temp_mz = common_mz + iso_map['H'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '5Prime':
+                                                                #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + iso_map['H'][0]
+                                                        elif j == 'd':
+                                                            #########phosphate group
+                                                            if oligo_type == '5Prime':
+                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                            else:
+                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '5Prime':
+                                                                #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                        elif j == 'a-B':
+                                                            letterB = temp1[-1]
+                                                            if letterB == 'A':
+                                                                mz_B = mz_A
+                                                            elif letterB == 'U':
+                                                                mz_B = mz_U
+                                                            elif letterB == 'G':
+                                                                mz_B = mz_G
+                                                            elif letterB == 'C':
+                                                                mz_B = mz_C
+                                                            #########phosphate group
+                                                            if oligo_type == '5Prime':
+                                                                temp_mz = common_mz + iso_map['H'][0] - mz_B
+                                                            else:
+                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                                                #########OH group
+                                                                # if oligo_type == '5Prime':
+                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+                                                                # else:
+                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                                    elif fragion_set[j] == 2:
+                                                        temp_fragion = j + str(no_base - i - 1)
+                                                        temp1 = oligo_seq[i + 1:]
+                                                        no_a = temp1.count('A')
+                                                        no_u = temp1.count('U')
+                                                        no_g = temp1.count('G')
+                                                        no_c = temp1.count('C')
+                                                        total_no = len(temp1)
+                                                        common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+                                                        if j == 'w':
+                                                            #########phosphate group
+                                                            if oligo_type == '3Prime':
+                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                            else:
+                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '3Prime':
+                                                                #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                        elif j == 'x':
+                                                            #########phosphate group
+                                                            if oligo_type == '3Prime':
+                                                                temp_mz = common_mz + iso_map['H'][0]
+                                                            else:
+                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '3Prime':
+                                                                #     temp_mz = common_mz + iso_map['H'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
+                                                        elif j == 'y':
+                                                            #########phosphate group
+                                                            if oligo_type == '3Prime':
+                                                                temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                            else:
+                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '3Prime':
+                                                                #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + iso_map['H'][0]
+                                                        elif j == 'z':
+                                                            #########phosphate group
+                                                            if oligo_type == '3Prime':
+                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                            else:
+                                                                temp_mz = common_mz + iso_map['H'][0]
+                                                                #########OH group
+                                                                # if oligo_type == '3Prime':
+                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                                # else:
+                                                                #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                                                    temp_ion = oligo_seq + '_' + temp_fragion
+                                                    for add_ion1 in adduct_set:
+                                                        temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
+                                                        all_fragmention.append(
+                                                            [oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion,
+                                                             adduct_ions[add_ion][1], temp_adduct_mz])
+                                                        target_spec.append([temp_adduct_mz, 1])
+                                                        # caculate the spectrum similarity
+
+                        break
+                # caculate the therotical fragment ions without modification
+    #             for add_ion in adduct_set:
+    #                 temp_mw = temp_idx[0][1]*charge - charge*adduct_ions[add_ion][0]
+    #                 max_true_mz = temp_idx[0][1]*charge - adduct_ions[add_ion][0]
+    #                 with con:
+    #                     cur = con.cursor()
+    #                     lower_bound = temp_mw * (1 - mz_var*10**-6)
+    #                     uper_bound = temp_mw * (1 + mz_var*10**-6)
+    #                     # query to get mz vs #sequence
+    #                     cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW >= {0} and MW <= {1}".format(lower_bound, uper_bound))
+    #                     temp_info = cur.fetchall()
+    #                 if temp_info:
+    #                     for line in temp_info:
+    #                         all_fragmention = []
+    #                         target_spec = []
+    #                         oligo_id = line[0]
+    #                         oligo_seq = line[1]
+    #                         oligo_type = line[2]
+    #                         no_base = len(oligo_seq)
+    #                         for i, temp_letter in enumerate(oligo_seq):
+    #                             if i != no_base - 1:
+    #                                 for j in fragion_set:
+    #                                     if fragion_set[j] == 1:
+    #                                         temp_fragion = j + str(i + 1)
+    #                                         temp1 = oligo_seq[:i + 1]
+    #                                         no_a = temp1.count('A')
+    #                                         no_u = temp1.count('U')
+    #                                         no_g = temp1.count('G')
+    #                                         no_c = temp1.count('C')
+    #                                         total_no = len(temp1)
+    #                                         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+    #                                         if j == 'a':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '5Prime':
+    #                                                 temp_mz = common_mz + iso_map['H'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '5Prime':
+    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+    #                                         elif j == 'b':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '5Prime':
+    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '5Prime':
+    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+    #                                         elif j == 'c':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '5Prime':
+    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
+    #                                                           iso_map['P'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + iso_map['H'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '5Prime':
+    #                                                 #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
+    #                                         elif j == 'd':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '5Prime':
+    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
+    #                                                           iso_map['P'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '5Prime':
+    #                                                 #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                         elif j == 'a-B':
+    #                                             letterB = temp1[-1]
+    #                                             if letterB == 'A':
+    #                                                 mz_B = mz_A
+    #                                             elif letterB == 'U':
+    #                                                 mz_B = mz_U
+    #                                             elif letterB == 'G':
+    #                                                 mz_B = mz_G
+    #                                             elif letterB == 'C':
+    #                                                 mz_B = mz_C
+    #                                             #########phosphate group
+    #                                             if oligo_type == '5Prime':
+    #                                                 temp_mz = common_mz + iso_map['H'][0] - mz_B
+    #                                             else:
+    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '5Prime':
+    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+    #                                     elif fragion_set[j] == 2:
+    #                                         temp_fragion = j + str(no_base - i - 1)
+    #                                         temp1 = oligo_seq[i + 1:]
+    #                                         no_a = temp1.count('A')
+    #                                         no_u = temp1.count('U')
+    #                                         no_g = temp1.count('G')
+    #                                         no_c = temp1.count('C')
+    #                                         total_no = len(temp1)
+    #                                         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+    #                                         if j == 'w':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '3Prime':
+    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
+    #                                                           iso_map['P'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '3Prime':
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+    #                                         elif j == 'x':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '3Prime':
+    #                                                 temp_mz = common_mz + iso_map['H'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
+    #                                                           iso_map['P'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '3Prime':
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
+    #                                         elif j == 'y':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '3Prime':
+    #                                                 temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '3Prime':
+    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
+    #                                         elif j == 'z':
+    #                                             #########phosphate group
+    #                                             if oligo_type == '3Prime':
+    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+    #                                             else:
+    #                                                 temp_mz = common_mz + iso_map['H'][0]
+    #                                                 #########OH group
+    #                                                 # if oligo_type == '3Prime':
+    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+    #                                                 # else:
+    #                                                 #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+    #                                     temp_ion = oligo_seq + '_' + temp_fragion
+    #                                     for add_ion1 in adduct_set:
+    #                                         temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
+    #                                         all_fragmention.append([oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion, adduct_ions[add_ion][1], temp_adduct_mz])
+    #                                         target_spec.append([temp_adduct_mz, 1])
+    #                                     # caculate the spectrum similarity
+    #                         if target_spec:
+    #                             test_spec = msmsSpectra['Spectra'][idx] # get the msms spectrum
+    #                             SimScore, Annotate_ID, mzSort, intensityMtx, count_nonemptyID = Calculate_Spec_Sim(all_fragmention, target_spec, test_spec, max_true_mz)
+    #                             output_infor.append([temp_idx[0][1], temp_mw, temp_rt, SimScore, Annotate_ID, count_nonemptyID, mzSort, intensityMtx, oligo_id, oligo_seq, oligo_type, all_fragmention])
+    #                     break
+    if output_infor:
+        #w.Scrolledlistbox2.insert('end', ['m/z', 'MW', 'Retention time', 'Similarity score', 'Oligo_seq', 'Oligo_type'])
+        tbl.CreateUI(['m/z', 'MW', 'Retention time', 'Similarity score', 'Oligo_seq', 'Oligo_type'])
+        # w.Scrolledlistbox2.insert('end', ['m/z', 'MW', 'Retention time', 'Similarity score', 'Oligo_seq', 'Oligo_type'])
+        for l in output_infor:
+            # w.Scrolledlistbox2.insert('end', [l[id2] for id2 in [0, 1, 2, 3, 8, 9]])
+            tbl.LoadTable([l[id2] for id2 in [0, 1, 2, 3, 8, 9]])
     sys.stdout.flush()
 
 
-def xxx(p1):
+
+
+
+def xxx(pl):
     pass
 
 def CurSelect(evt):
     global w
-    w.Scrolledlistbox2.bind('<Button-3>', popup)
+    w.Scrolledlistbox4.bind('<Button-3>', popup)
+    # w.Scrolledlistbox2.bind('<Button-3>', doplot)
 
-file2Url = {'m1A': 'http://www.yahoo.com',
-            'm2A': 'http://www.louisville.edu'}
+file2Url = {"m1A": 'http://mods.rna.albany.edu/mods/modifications/view/1',
+            "m2A": 'http://mods.rna.albany.edu/mods/modifications/view/2',
+            "m6A": 'http://mods.rna.albany.edu/mods/modifications/view/3',
+            "Am": 'http://mods.rna.albany.edu/mods/modifications/view/4',
+            "ms2m6A": 'http://mods.rna.albany.edu/mods/modifications/view/5',
+            "i6A": 'http://mods.rna.albany.edu/mods/modifications/view/6',
+            "ms2i6A": 'http://mods.rna.albany.edu/mods/modifications/view/7',
+            "io6A": 'http://mods.rna.albany.edu/mods/modifications/view/8',
+            "ms2io6A": 'http://mods.rna.albany.edu/mods/modifications/view/9',
+            "g6A": 'http://mods.rna.albany.edu/mods/modifications/view/10',
+            "t6A": 'http://mods.rna.albany.edu/mods/modifications/view/11',
+            "ms2t6A": 'http://mods.rna.albany.edu/mods/modifications/view/12',
+            "m6t6A": 'http://mods.rna.albany.edu/mods/modifications/view/13',
+            "hn6A": 'http://mods.rna.albany.edu/mods/modifications/view/14',
+            "ms2hn6A": 'http://mods.rna.albany.edu/mods/modifications/view/15',
+            "Ar(p)": 'http://mods.rna.albany.edu/mods/modifications/view/16',
+            "I": 'http://mods.rna.albany.edu/mods/modifications/view/17',
+            "m1I": 'http://mods.rna.albany.edu/mods/modifications/view/18',
+            "m1Im": 'http://mods.rna.albany.edu/mods/modifications/view/19',
+            "m3C": 'http://mods.rna.albany.edu/mods/modifications/view/20',
+            "m5C": 'http://mods.rna.albany.edu/mods/modifications/view/21',
+            "Cm": 'http://mods.rna.albany.edu/mods/modifications/view/22',
+            "s2C": 'http://mods.rna.albany.edu/mods/modifications/view/23',
+            "ac4C": 'http://mods.rna.albany.edu/mods/modifications/view/24',
+            "f5C": 'http://mods.rna.albany.edu/mods/modifications/view/25',
+            "m5Cm": 'http://mods.rna.albany.edu/mods/modifications/view/26',
+            "ac4Cm": 'http://mods.rna.albany.edu/mods/modifications/view/27',
+            "k2C": 'http://mods.rna.albany.edu/mods/modifications/view/28',
+            "m1G": 'http://mods.rna.albany.edu/mods/modifications/view/29',
+            "m2G": 'http://mods.rna.albany.edu/mods/modifications/view/30',
+            "m7G": 'http://mods.rna.albany.edu/mods/modifications/view/31',
+            "Gm": 'http://mods.rna.albany.edu/mods/modifications/view/32',
+            "m22G": 'http://mods.rna.albany.edu/mods/modifications/view/33',
+            "m2Gm": 'http://mods.rna.albany.edu/mods/modifications/view/34',
+            "m22Gm": 'http://mods.rna.albany.edu/mods/modifications/view/35',
+            "Gr(p)": 'http://mods.rna.albany.edu/mods/modifications/view/36',
+            "yW": 'http://mods.rna.albany.edu/mods/modifications/view/37',
+            "o2yW": 'http://mods.rna.albany.edu/mods/modifications/view/38',
+            "OHyW": 'http://mods.rna.albany.edu/mods/modifications/view/39',
+            "OHyW*": 'http://mods.rna.albany.edu/mods/modifications/view/40',
+            "imG": 'http://mods.rna.albany.edu/mods/modifications/view/41',
+            "mimG": 'http://mods.rna.albany.edu/mods/modifications/view/42',
+            "Q": 'http://mods.rna.albany.edu/mods/modifications/view/43',
+            "oQ": 'http://mods.rna.albany.edu/mods/modifications/view/44',
+            "galQ": 'http://mods.rna.albany.edu/mods/modifications/view/45',
+            "manQ": 'http://mods.rna.albany.edu/mods/modifications/view/46',
+            "preQ0": 'http://mods.rna.albany.edu/mods/modifications/view/47',
+            "preQ1": 'http://mods.rna.albany.edu/mods/modifications/view/48',
+            "G+": 'http://mods.rna.albany.edu/mods/modifications/view/49',
+            u'\u03A8': 'http://mods.rna.albany.edu/mods/modifications/view/50',
+            "D": 'http://mods.rna.albany.edu/mods/modifications/view/51',
+            "m5U": 'http://mods.rna.albany.edu/mods/modifications/view/52',
+            "Um": 'http://mods.rna.albany.edu/mods/modifications/view/53',
+            "m5Um": 'http://mods.rna.albany.edu/mods/modifications/view/54',
+            "m1\u03A8": 'http://mods.rna.albany.edu/mods/modifications/view/55',
+            "\u03A8m": 'http://mods.rna.albany.edu/mods/modifications/view/56',
+            "s2U": 'http://mods.rna.albany.edu/mods/modifications/view/57',
+            "s4U": 'http://mods.rna.albany.edu/mods/modifications/view/58',
+            "m5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/59',
+            "s2Um": 'http://mods.rna.albany.edu/mods/modifications/view/60',
+            "acp3U": 'http://mods.rna.albany.edu/mods/modifications/view/61',
+            "ho5U": 'http://mods.rna.albany.edu/mods/modifications/view/62',
+            "mo5U": 'http://mods.rna.albany.edu/mods/modifications/view/63',
+            "cmo5U": 'http://mods.rna.albany.edu/mods/modifications/view/64',
+            "mcmo5U": 'http://mods.rna.albany.edu/mods/modifications/view/65',
+            "chm5U": 'http://mods.rna.albany.edu/mods/modifications/view/66',
+            "mchm5U": 'http://mods.rna.albany.edu/mods/modifications/view/67',
+            "mcm5U": 'http://mods.rna.albany.edu/mods/modifications/view/68',
+            "mcm5Um": 'http://mods.rna.albany.edu/mods/modifications/view/69',
+            "mcm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/70',
+            "nm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/71',
+            "mnm5U": 'http://mods.rna.albany.edu/mods/modifications/view/72',
+            "mnm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/73',
+            "mnm5se2U": 'http://mods.rna.albany.edu/mods/modifications/view/74',
+            "ncm5U": 'http://mods.rna.albany.edu/mods/modifications/view/75',
+            "ncm5Um": 'http://mods.rna.albany.edu/mods/modifications/view/76',
+            "cmnm5U": 'http://mods.rna.albany.edu/mods/modifications/view/77',
+            "cmnm5Um": 'http://mods.rna.albany.edu/mods/modifications/view/78',
+            "cmnm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/79',
+            "m62A": 'http://mods.rna.albany.edu/mods/modifications/view/80',
+            "Im": 'http://mods.rna.albany.edu/mods/modifications/view/81',
+            "m4C": 'http://mods.rna.albany.edu/mods/modifications/view/82',
+            "m4Cm": 'http://mods.rna.albany.edu/mods/modifications/view/83',
+            "hm5C": 'http://mods.rna.albany.edu/mods/modifications/view/84',
+            "m3U": 'http://mods.rna.albany.edu/mods/modifications/view/85',
+            "m1acp3\u03A8": 'http://mods.rna.albany.edu/mods/modifications/view/86',
+            "cm5U": 'http://mods.rna.albany.edu/mods/modifications/view/87',
+            "m6Am": 'http://mods.rna.albany.edu/mods/modifications/view/88',
+            "m62Am": 'http://mods.rna.albany.edu/mods/modifications/view/89',
+            "m2,7G": 'http://mods.rna.albany.edu/mods/modifications/view/90',
+            "m2,2,7G": 'http://mods.rna.albany.edu/mods/modifications/view/91',
+            "m3Um": 'http://mods.rna.albany.edu/mods/modifications/view/92',
+            "m5D": 'http://mods.rna.albany.edu/mods/modifications/view/93',
+            "m3\u03A8": 'http://mods.rna.albany.edu/mods/modifications/view/94',
+            "f5Cm": 'http://mods.rna.albany.edu/mods/modifications/view/95',
+            "m1Gm": 'http://mods.rna.albany.edu/mods/modifications/view/96',
+            "m1Am": 'http://mods.rna.albany.edu/mods/modifications/view/97',
+            "\u03C4m5U": 'http://mods.rna.albany.edu/mods/modifications/view/98',
+            "\u03C4m5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/99',
+            "imG-14": 'http://mods.rna.albany.edu/mods/modifications/view/100',
+            "imG2": 'http://mods.rna.albany.edu/mods/modifications/view/101',
+            "ac6A": 'http://mods.rna.albany.edu/mods/modifications/view/102',
+            "inm5U": 'http://mods.rna.albany.edu/mods/modifications/view/103',
+            "inm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/104',
+            "inm5Um": 'http://mods.rna.albany.edu/mods/modifications/view/105',
+            "m2,7Gm": 'http://mods.rna.albany.edu/mods/modifications/view/106',
+            "m42Cm": 'http://mods.rna.albany.edu/mods/modifications/view/107',
+            "C+": 'http://mods.rna.albany.edu/mods/modifications/view/113',
+            "m8A": 'http://mods.rna.albany.edu/mods/modifications/view/114',
+            "gmnm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/118',
+            "gcmnm5s2U": 'http://mods.rna.albany.edu/mods/modifications/view/119',
+            "cnm5U": 'http://mods.rna.albany.edu/mods/modifications/view/120'}
+
 
 def go2link():
     global w
-    idx = w.Scrolledlistbox2.curselection()[0]
-    file = w.Scrolledlistbox2.get(idx)
+    idx = w.Scrolledlistbox4.curselection()[0]
+    file = w.Scrolledlistbox4.get(idx)
     url = file2Url[file]
     webbrowser.open_new(url)
+
+def plotfigure():
+    global w, output_infor
+    # idx = w.Scrolledlistbox2.curselection()[0]
+    idx = tbl.row
+    if idx:
+        annotate_ID = output_infor[idx-1][4]
+        count_nonemptyID = output_infor[idx-1][5]
+        mz = output_infor[idx-1][6]
+        intensity = output_infor[idx - 1][7][1]
+        simscore = output_infor[idx - 1][3]
+        f = plt.figure()
+        ax = f.add_subplot(111, autoscale_on=False, xlim=(0, max(mz)*1.01), ylim=(0, max(intensity)))
+        for i in range(len(mz)):
+            ax.axvline(x=mz[i], ymin=0, ymax=intensity[i]/max(intensity), linewidth=0.5, color='k')
+        # ax.bar(mz, intensity, align='center', alpha=1, color='k')
+        # ax.set_ylim([0, max(intensity)*1.08])
+        # ax.annotate(annotate_ID[31], xy=(mz[31], intensity[31]), xytext=(mz[31]+80, intensity[31]*1.005),
+        #             arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),)
+        count1 = 0
+        for i in range(len(annotate_ID)):
+            if annotate_ID[i]:
+                count1 += 1
+                if count1 < int(count_nonemptyID/2):
+                    ax.annotate(annotate_ID[i], xy=(mz[i], intensity[i]), xycoords='data',
+                                 xytext=(mz[i]-100, intensity[i]*1.05), arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),
+                                horizontalalignment='right',
+                                verticalalignment='bottom'
+                                )
+                else:
+                    ax.annotate(annotate_ID[i], xy=(mz[i], intensity[i]), xycoords='data',
+                                 xytext=(mz[i]+100, intensity[i]*1.05), arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),
+                                horizontalalignment='left',
+                                verticalalignment='bottom'
+                                )
+
+        # plt.plot(mz.reshape(-1, 1), intensity.reshape(-1, 1))
+        # plt.bar(mz.reshape(-1, 1), intensity.reshape(-1, 1), align='center', alpha=1, color='k')
+        plt.xlabel('m/z')
+        plt.ylabel('Intensity')
+        plt.title('Identification (SimScore :' + str(round(simscore, 2)) + ')')
+        # plt.savefig('fig1.png')
+
+        canvas = FigureCanvasTkAgg(f, w.Canvas3)
+        canvas.show()
+        canvas.get_tk_widget().pack(side='bottom', fill='both', expand=True)
+    sys.stdout.flush()
+
+def editfigure():
+    global w, output_infor
+    # idx = w.Scrolledlistbox2.curselection()[0]
+    idx = tbl.row
+    if idx:
+        annotate_ID = output_infor[idx-1][4]
+        count_nonemptyID = output_infor[idx-1][5]
+        mz = output_infor[idx-1][6]
+        intensity = output_infor[idx - 1][7][1]
+        simscore = output_infor[idx - 1][3]
+        f = plt.figure()
+        ax = f.add_subplot(111, autoscale_on=False, xlim=(0, max(mz)*1.01), ylim=(0, max(intensity)))
+        for i in range(len(mz)):
+            ax.axvline(x=mz[i], ymin=0, ymax=intensity[i]/max(intensity), linewidth=0.5, color='k')
+        # ax.bar(mz, intensity, align='center', alpha=1, color='k')
+        # ax.set_ylim([0, max(intensity)*1.08])
+        # ax.annotate(annotate_ID[31], xy=(mz[31], intensity[31]), xytext=(mz[31]+80, intensity[31]*1.005),
+        #             arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),)
+        count1 = 0
+        for i in range(len(annotate_ID)):
+            if annotate_ID[i]:
+                count1 += 1
+                if count1 < int(count_nonemptyID/2):
+                    ax.annotate(annotate_ID[i], xy=(mz[i], intensity[i]), xycoords='data',
+                                 xytext=(mz[i]-100, intensity[i]*1.05), arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),
+                                horizontalalignment='right',
+                                verticalalignment='bottom'
+                                )
+                else:
+                    ax.annotate(annotate_ID[i], xy=(mz[i], intensity[i]), xycoords='data',
+                                 xytext=(mz[i]+100, intensity[i]*1.05), arrowprops=dict(facecolor='black', shrink=0.05, width=1, headwidth=5),
+                                horizontalalignment='left',
+                                verticalalignment='bottom'
+                                )
+
+        # plt.plot(mz.reshape(-1, 1), intensity.reshape(-1, 1))
+        # plt.bar(mz.reshape(-1, 1), intensity.reshape(-1, 1), align='center', alpha=1, color='k')
+        plt.xlabel('m/z')
+        plt.ylabel('Intensity')
+        plt.title('Identification (SimScore :' + str(round(simscore, 2)) + ')')
+    sys.stdout.flush()
 
 def popup(event):
     global menu
     menu.post(event.x_root, event.y_root)
 
+def doplot(event):
+    global menu1
+    menu1.post(event.x_root, event.y_root)
+# ###### Here d nothing func ####
+def donothing():
+   filewin = Toplevel(root)
+   button = Button(filewin, text="Do nothing button")
+   button.pack()
+
+def naccheck():
+    for child in w.Labelframe1.winfo_children():
+        child.configure(state='disable')
+    for child in w.Labelframe3.winfo_children():
+        child.configure(state='disable')
+    for child in w.Labelframe4.winfo_children():
+        child.configure(state='disable')
+   # for child in w.Labelframe5.winfo_children():
+    #    child.configure(state='disable')
+    w.Checkbutton1.configure(state='disable')
+    w.Checkbutton2.configure(state='disable')
+    w.Checkbutton6.configure(state='disable')
+    w.Checkbutton7.configure(state='disable')
+    w.Checkbutton8.configure(state='disable')
+    w.Checkbutton9.configure(state='disable')
+    for child in w.Labelframe6.winfo_children():
+        child.configure(state='disable')
+   # for child in w.Labelframe11.winfo_children():
+    #    child.configure(state='disable')
+    #for child in w.Labelframe12.winfo_children():
+     #   child.configure(state='disable')
+
+def naccheck1():
+    for child in w.Labelframe1.winfo_children():
+        child.configure(state='normal')
+    for child in w.Labelframe3.winfo_children():
+        child.configure(state='normal')
+    for child in w.Labelframe4.winfo_children():
+        child.configure(state='normal')
+    #for child in w.Labelframe5.winfo_children():
+    #    child.configure(state='normal')
+    for child in w.Labelframe6.winfo_children():
+        child.configure(state='normal')
+    #for child in w.Labelframe12.winfo_children():
+     #   child.configure(state='normal')
+    w.Checkbutton1.configure(state='normal')
+    w.Checkbutton2.configure(state='normal')
+    w.Checkbutton6.configure(state='normal')
+
+def naccheck2():
+    #for child in w.Labelframe11.winfo_children():
+    #    child.configure(state='normal')
+    w.Checkbutton7.configure(state='normal')
+    w.Checkbutton8.configure(state='normal')
+    w.Checkbutton9.configure(state='normal')
+
 def init(top, gui, *args, **kwargs):
-    global w, top_level, root
+    global w, top_level, root, tbl
     w = gui
     top_level = top
     root = top
-    global menu
+    global menu, menu1
+    width, height = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.geometry('%dx%d+0+0' % (width/2, height/2))
+    #root.geometry("350x150+%d+%d" % (((root.winfo_screenwidth() / 2.) - (350 / 2.)), ((root.winfo_screenheight() / 2.) - (150 / 2.))))
+    tbl=App(w.Labelframe11)
+
     menu = Menu(root, tearoff=0)
     menu.add_command(label='Go to Website', command=go2link)
     menu.add_command(label='Done', command='')
 
-    w.Scrolledlistbox2.config(selectmode='extended')
-    w.Scrolledlistbox3.config(selectmode='extended')
+############## Start new lines ########
+    menubar = Menu(root)
+    menubar.add_command(label="Oligonucleotides", command=naccheck)
 
-    # greek_alphabet = {
-    #     u'\u0391': 'Alpha',
-    #     u'\u0392': 'Beta',
-    #     u'\u0393': 'Gamma',
-    #     u'\u0394': 'Delta',
-    #     u'\u0395': 'Epsilon',
-    #     u'\u0396': 'Zeta',
-    #     u'\u0397': 'Eta',
-    #     u'\u0398': 'Theta',
-    #     u'\u0399': 'Iota',
-    #     u'\u039A': 'Kappa',
-    #     u'\u039B': 'Lamda',
-    #     u'\u039C': 'Mu',
-    #     u'\u039D': 'Nu',
-    #     u'\u039E': 'Xi',
-    #     u'\u039F': 'Omicron',
-    #     u'\u03A0': 'Pi',
-    #     u'\u03A1': 'Rho',
-    #     u'\u03A3': 'Sigma',
-    #     u'\u03A4': 'Tau',
-    #     u'\u03A5': 'Upsilon',
-    #     u'\u03A6': 'Phi',
-    #     u'\u03A7': 'Chi',
-    #     u'\u03A8': 'Psi',
-    #     u'\u03A9': 'Omega',
-    #     u'\u03B1': 'alpha',
-    #     u'\u03B2': 'beta',
-    #     u'\u03B3': 'gamma',
-    #     u'\u03B4': 'delta',
-    #     u'\u03B5': 'epsilon',
-    #     u'\u03B6': 'zeta',
-    #     u'\u03B7': 'eta',
-    #     u'\u03B8': 'theta',
-    #     u'\u03B9': 'iota',
-    #     u'\u03BA': 'kappa',
-    #     u'\u03BB': 'lamda',
-    #     u'\u03BC': 'mu',
-    #     u'\u03BD': 'nu',
-    #     u'\u03BE': 'xi',
-    #     u'\u03BF': 'omicron',
-    #     u'\u03C0': 'pi',
-    #     u'\u03C1': 'rho',
-    #     u'\u03C3': 'sigma',
-    #     u'\u03C4': 'tau',
-    #     u'\u03C5': 'upsilon',
-    #     u'\u03C6': 'phi',
-    #     u'\u03C7': 'chi',
-    #     u'\u03C8': 'psi',
-    #     u'\u03C9': 'omega',
-    # }
-    # codes = {
-    #     1 : u"\u00B9",
-    #     2 : u"\u00B2",
-    #     3 : u"\u00B3",
-    #     4 : u"\u2074",
-    #     5 : u"\u2075",
-    #     6 : u"\u2076",
-    #     7 : u"\u2077"
-    # }
-    # selected_files = ["m\u00B9A", "m\u00B2A", "m\u2076A", "Am", "ms\u00B2m\u2076A", "i\u2076A", "ms\u00B2i\u2076A", "io\u2076A", "ms\u00B2io\u2076A", "g\u2076A", "t\u2076A", "ms\u00B2t\u2076A", "m\u2076t\u2076A",
-    #                   "hn\u2076A", "ms\u00B2hn\u2076A", "Ar(p)", "I", "m\u00B9I", "m\u00B9Im", "m\u00B3C", "m\u2075C", "Cm", "s\u00B2C", "ac\u2074C", "f\u2075C", "m\u2075Cm", "ac\u2074Cm",
-    #                   "k\u00B2C", "m\u00B9G", "m\u00B2G", "m\u2077G", "Gm", "m\u00B22G", "m\u00B2Gm", "m\u00B22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
-    #                   "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03C8', "D", "m\u2075U", "Um", "m5Um", "m1\u03C8", "\u03C8m",
-    #                   "s\u00B2U", "s\u2074U", "m\u2075s\u00B2U", "s\u00B2Um", "acp\u00B3U", "ho\u2075U", "mo\u2075U", "cmo\u2075U"]
-    selected_files = ["m1A", "m2A", "m6A", "Am", "ms2m6A", "i6A", "ms2i6A", "io6A", "ms2io6A", "g6A", "t6A", "ms2t6A", "m6t6A",
-                      "hn6A", "ms2hn6A", "Ar(p)", "I", "m1I", "m1Im", "m3C", "m5C", "Cm", "s2C", "ac4C", "f5C", "m5Cm", "ac4Cm",
-                      "k2C", "m1G", "m2G", "m7G", "Gm", "m22G", "m2Gm", "m22Gm", "Gr(p)", "yW", "o2yW", "OHyW", "OHyW*", "imG",
-                      "mimG", "Q", "oQ", "galQ", "manQ", "preQ0", "preQ1", "G+", u'\u03A8', "D", "m5U", "Um", "m5Um", "m1\u03A8", "\u03A8m",
-                      "s2U", "s4U", "m5s2U", "s2Um", "acp3U", "ho5U", "mo5U", "cmo5U", "mcmo5U", "chm5U", "mchm5U", "mcm5U", "mcm5Um",
-                      "mcm5s2U", "nm5s2U", "mnm5U", "mnm5s2U", "mnm5se2U", "ncm5U", "ncm5Um", "cmnm5U", "cmnm5Um", "cmnm5s2U", "m62A",
-                      "Im", "m4C", "m4Cm", "hm5C", "m3U", "m1acp3\u03A8", "cm5U", "m6Am", "m62Am", "m2,7G", "m2,2,7G", "m3Um", "m5D",
-                      "m3\u03A8", "f5Cm", "m1Gm", "m1Am", "\u03C4m5U", "\u03C4m5s2U", "imG-14", "imG-14", "ac6A", "inm5U", "inm5s2U",
-                      "inm5Um", "m2,7Gm", "m42Cm", "C+", "m8A", "gmnm5s2U", "gcmnm5s2U", "cnm5U"]
-    for l in selected_files:
-        w.Scrolledlistbox2.insert('end', l)
-    w.Scrolledlistbox2.bind('<<ListboxSelect>>', CurSelect)
+    filemenu1 = Menu(menubar, tearoff=0)
+    filemenu1.add_command(label="Select Parameters", command=naccheck1)
+    filemenu1.add_command(label="Show results", command=naccheck2)
+    menubar.add_cascade(label="Identification", menu=filemenu1)
+
+    filemenu = Menu(menubar, tearoff=0)
+    filemenu.add_command(label="New", command=donothing)
+    filemenu.add_command(label="Open", command=donothing)
+    filemenu.add_command(label="Save", command=donothing)
+    filemenu.add_command(label="Save as...", command=donothing)
+    filemenu.add_command(label="Close", command=donothing)
+
+    filemenu.add_separator()
+
+    filemenu.add_command(label="Exit", command=root.quit)
+    menubar.add_cascade(label="RNA Source", menu=filemenu)
+    editmenu = Menu(menubar, tearoff=0)
+    editmenu.add_command(label="Undo", command=donothing)
+
+    editmenu.add_separator()
+
+    editmenu.add_command(label="Cut", command=donothing)
+    editmenu.add_command(label="Copy", command=donothing)
+    editmenu.add_command(label="Paste", command=donothing)
+    editmenu.add_command(label="Delete", command=donothing)
+    editmenu.add_command(label="Select All", command=donothing)
+
+    menubar.add_cascade(label="MS Mode", menu=editmenu)
+    helpmenu = Menu(menubar, tearoff=0)
+    helpmenu.add_command(label="Help Index", command=donothing)
+    helpmenu.add_command(label="About...", command=donothing)
+    menubar.add_cascade(label="Modification", menu=helpmenu)
+
+    root.config(menu=menubar)
+########## End new lines ########
+    menu1 = Menu(root, tearoff=0)
+    menu1.add_command(label='Plot', command=plotfigure)
+
+    w.Scrolledlistbox4.config(selectmode='extended')
+    w.Scrolledlistbox5.config(selectmode='extended')
+    w.Scrolledlistbox3.config(selectmode='extended')
+    w.Scrolledlistbox6.config(selectmode='extended')
     w.Entry1.insert(0, "5")
 
 def destroy_window():
@@ -501,6 +1722,18 @@ def destroy_window():
 if __name__ == '__main__':
     import RNAFinder
     RNAFinder.vp_start_gui()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

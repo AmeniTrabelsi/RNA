@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
+def read_fa_to_dict(fname):
     print("read data from file")
     array = []  # odd lines store info, even lines store sequence
     flag = False  # flag is used to indicate this is the second+ line for sequence
@@ -32,7 +32,8 @@ def read_fa_to_dict(fname = "input_data/all-trnas.fa"):
         rna_data.append([name, source, sequence])
 
     print("map from DNA to RNA")
-    dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C", "K": "K", "N": "N"}
+    # dna_rna_map = {"A": "U", "T": "A", "C": "G", "G": "C", "K": "K", "N": "N"}
+    dna_rna_map = {"A": "A", "T": "U", "C": "C", "G": "G", "K": "K", "N": "N"}
     for idx, dna_data in enumerate(rna_data):
         dna_seq = dna_data[-1]
         rna_seq = []

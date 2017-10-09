@@ -64,7 +64,7 @@ fragments = []  # fetch from Fragments table, output values are ((FragmentID, Na
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("SELECT * FROM Uni_two_oligos")
+    cur.execute("SELECT * FROM tRNA_UniOligos_Ecoli_T1")
     fragments_head = [i[0] for i in cur.description]
     fragments = cur.fetchall()
 
@@ -100,25 +100,49 @@ for idx, line in enumerate(fragments):
                     total_no = len(temp1)
                     common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
                     if j == 'a':
-                        if oligo_type == '5prime':
-                            temp_mz = common_mz + 2 * iso_map['H'][0]
+                        #########phosphate group
+                        if oligo_type == '5Prime':
+                            temp_mz = common_mz + iso_map['H'][0]
                         else:
                             temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                        #########OH group
+                        # if oligo_type == '5Prime':
+                        #     temp_mz = common_mz + 2 * iso_map['H'][0]
+                        # else:
+                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
                     elif j == 'b':
-                        if oligo_type == '5prime':
-                            temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+                        #########phosphate group
+                        if oligo_type == '5Prime':
+                            temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
                         else:
                             temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                        #########OH group
+                        # if oligo_type == '5Prime':
+                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+                        # else:
+                        #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
                     elif j == 'c':
-                        if oligo_type == '5prime':
-                            temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                        #########phosphate group
+                        if oligo_type == '5Prime':
+                            temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0]
+                        #########OH group
+                        # if oligo_type == '5Prime':
+                        #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                        # else:
+                        #     temp_mz = common_mz + iso_map['H'][0]
                     elif j == 'd':
-                        if oligo_type == '5prime':
-                            temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                        #########phosphate group
+                        if oligo_type == '5Prime':
+                            temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
                         else:
                             temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                        #########OH group
+                        # if oligo_type == '5Prime':
+                        #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                        # else:
+                        #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
                     elif j == 'a-B':
                         letterB = temp1[-1]
                         if letterB == 'A':
@@ -129,10 +153,16 @@ for idx, line in enumerate(fragments):
                             mz_B = mz_G
                         elif letterB == 'C':
                             mz_B = mz_C
-                        if oligo_type == '5prime':
-                            temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+                        #########phosphate group
+                        if oligo_type == '5Prime':
+                            temp_mz = common_mz + iso_map['H'][0] - mz_B
                         else:
                             temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                        #########OH group
+                        # if oligo_type == '5Prime':
+                        #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+                        # else:
+                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
                 elif productionclass[j] == 2:
                     temp_positionclass = j + str(no_letter - i - 1)
                     temp1 = oligo_seq[i+1:]
@@ -143,42 +173,68 @@ for idx, line in enumerate(fragments):
                     total_no = len(temp1)
                     common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
                     if j == 'w':
-                        if oligo_type == '3prime':
+                        #########phosphate group
+                        if oligo_type == '3Prime':
                             temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
                         else:
-                            temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                            temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                        #########OH group
+                        # if oligo_type == '3Prime':
+                        #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                        # else:
+                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
                     elif j == 'x':
-                        if oligo_type == '3prime':
+                        #########phosphate group
+                        if oligo_type == '3Prime':
                             temp_mz = common_mz + iso_map['H'][0]
                         else:
-                            temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
+                            temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                        #########OH group
+                        # if oligo_type == '3Prime':
+                        #     temp_mz = common_mz + iso_map['H'][0]
+                        # else:
+                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
                     elif j == 'y':
-                        if oligo_type == '3prime':
+                        #########phosphate group
+                        if oligo_type == '3Prime':
                             temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
                         else:
-                            temp_mz = common_mz + iso_map['H'][0]
+                            temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                        #########OH group
+                        # if oligo_type == '3Prime':
+                        #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                        # else:
+                        #     temp_mz = common_mz + iso_map['H'][0]
                     elif j == 'z':
-                        if oligo_type == '3prime':
+                        #########phosphate group
+                        if oligo_type == '3Prime':
                             temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
                         else:
-                            temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                            temp_mz = common_mz + iso_map['H'][0]
+                        #########OH group
+                        # if oligo_type == '3Prime':
+                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                        # else:
+                        #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
                 temp_ion = oligo_seq + '_' + temp_positionclass
                 temp_adducts = {'H-', '-'}
                 for temp1_adducts in temp_adducts:
                     temp_adduct_mz = temp_mz + 2*adduct_ions[temp1_adducts][0]
                     all_production.append([oligo_id, oligo_seq[::-1], oligo_type, temp_ion, temp_positionclass, temp1_adducts, adduct_ions[temp1_adducts][1], temp_adduct_mz])
 
+
+
 print("Total length of data to write into mysql is {0}".format(len(all_production)))
 print("Store the data into db")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery = "INSERT INTO Two_oligo_FragmentIons ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery = "INSERT INTO tRNA_Ecoli_T1_FragmentIons ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS Two_oligo_FragmentIons")
-    cur.execute("CREATE TABLE Two_oligo_FragmentIons(FragmentIonID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS tRNA_Ecoli_T1_FragmentIons")
+    cur.execute("CREATE TABLE tRNA_Ecoli_T1_FragmentIons(FragmentIonID INT PRIMARY KEY AUTO_INCREMENT, \
                      Oligo_ID VARCHAR(255), \
                      Oligonucleotide VARCHAR(255), \
                      Oligo_Type VARCHAR(255), \

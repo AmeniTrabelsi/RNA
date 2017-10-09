@@ -14,6 +14,13 @@ set vTcl(analog_color_m) #d9d9d9
 set vTcl(active_fg) #000000
 set vTcl(actual_gui_menu_active_bg)  #d8d8d8
 set vTcl(active_menu_fg) #000000
+#############################################################################
+# vTcl Code to Load User Fonts
+
+vTcl:font:add_font \
+    "-family {Segoe UI} -size 9 -weight normal -slant roman -underline 0 -overstrike 0" \
+    user \
+    vTcl:font9
 #################################
 #LIBRARY PROCEDURES
 #
@@ -35,8 +42,15 @@ proc vTcl:project:info {} {
     set site_4_0 $site_3_0.scr40
     set site_3_0 $base.lab65
     set site_3_0 $base.lab73
-    set site_3_0 $base.scr43
-    set site_3_0 $base.scr44
+    set site_3_0 $base.lab49
+    set site_4_0 $site_3_0.scr50
+    set site_4_0 $site_3_0.scr51
+    set site_3_0 $base.lab55
+    set site_3_0 $base.lab66
+    set site_3_0 $base.lab45
+    set site_4_0 $site_3_0.scr47
+    set site_4_0 $site_3_0.scr48
+    set site_3_0 $base.lab37
     namespace eval ::widgets_bindings {
         set tagslist _TopLevel
     }
@@ -73,7 +87,7 @@ proc vTclWindow.top37 {base} {
         -menu "$top.m72" -background {#d9d9d9} -highlightbackground {#d9d9d9} \
         -highlightcolor black 
     wm focusmodel $top passive
-    wm geometry $top 2036x1880+853+7
+    wm geometry $top 2757x1803+835+127
     update
     # set in toplevel.wgt.
     global vTcl
@@ -87,71 +101,71 @@ proc vTclWindow.top37 {base} {
     vTcl:DefineAlias "$top" "Toplevel1" vTcl:Toplevel:WidgetProc "" 1
     labelframe $top.lab44 \
         -foreground black -text {MS method :} -background {#d9d9d9} \
-        -height 155 -highlightbackground {#d9d9d9} -highlightcolor black \
-        -width 540 
+        -height 95 -highlightbackground {#d9d9d9} -highlightcolor black \
+        -width 700 
     vTcl:DefineAlias "$top.lab44" "Labelframe1" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab44
     radiobutton $site_3_0.rad46 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -command adductselection \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
         -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
         -text {Negative mode} -value 2 -variable rdo_negmode 
     vTcl:DefineAlias "$site_3_0.rad46" "Radiobutton2" vTcl:WidgetProc "Toplevel1" 1
     radiobutton $site_3_0.rad47 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -command adductselection \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
         -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
         -text {Positive mode} -value 1 -variable rdo_posmode 
     vTcl:DefineAlias "$site_3_0.rad47" "Radiobutton1" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.rad46 \
-        -in $site_3_0 -x 290 -y 60 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 290 -y 40 -anchor nw -bordermode ignore 
     place $site_3_0.rad47 \
-        -in $site_3_0 -x 30 -y 60 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 30 -y 40 -anchor nw -bordermode ignore 
     labelframe $top.lab48 \
-        -foreground black -text {Database selection} -background {#d9d9d9} \
-        -height 165 -highlightbackground {#d9d9d9} -highlightcolor black \
-        -width 550 
+        -foreground black -text {Phylogenetic Occurrence} \
+        -background {#d9d9d9} -height 145 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 700 
     vTcl:DefineAlias "$top.lab48" "Labelframe2" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab48
     checkbutton $site_3_0.che49 \
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
-        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -background {#d9d9d9} -command allrnaselection \
+        -disabledforeground {#a3a3a3} -font $::vTcl(fonts,vTcl:font9,object) \
         -foreground {#000000} -highlightbackground {#d9d9d9} \
-        -highlightcolor black -justify left -text Archaeal-trnas \
-        -variable Archaeal 
+        -highlightcolor black -justify left -text Archaeal -variable Archaeal 
     vTcl:DefineAlias "$site_3_0.che49" "Checkbutton1" vTcl:WidgetProc "Toplevel1" 1
     checkbutton $site_3_0.che50 \
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
-        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
-        -foreground {#000000} -highlightbackground {#d9d9d9} \
-        -highlightcolor black -justify left -text Bacterial-trnas \
-        -variable Bacterial 
+        -background {#d9d9d9} -command allrnaselection \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -text Bacterial -variable Bacterial 
     vTcl:DefineAlias "$site_3_0.che50" "Checkbutton2" vTcl:WidgetProc "Toplevel1" 1
     checkbutton $site_3_0.che51 \
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
-        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
-        -foreground {#000000} -highlightbackground {#d9d9d9} \
-        -highlightcolor black -justify left -text Eukaryotic-trnas \
-        -variable Eukaryotic 
+        -background {#d9d9d9} -command allrnaselection \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -text Eukaryotic -variable Eukaryotic 
     vTcl:DefineAlias "$site_3_0.che51" "Checkbutton3" vTcl:WidgetProc "Toplevel1" 1
     checkbutton $site_3_0.che52 \
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -command allrnaselection \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
         -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
-        -text All-trnas -variable alltrnas 
+        -text All -variable alltrnas 
     vTcl:DefineAlias "$site_3_0.che52" "Checkbutton4" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.che49 \
         -in $site_3_0 -x 30 -y 40 -anchor nw -bordermode ignore 
     place $site_3_0.che50 \
         -in $site_3_0 -x 300 -y 40 -anchor nw -bordermode ignore 
     place $site_3_0.che51 \
-        -in $site_3_0 -x 30 -y 100 -width 225 -relwidth 0 -height 52 \
+        -in $site_3_0 -x 30 -y 90 -width 225 -relwidth 0 -height 52 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $site_3_0.che52 \
-        -in $site_3_0 -x 300 -y 100 -width 165 -relwidth 0 -height 52 \
+        -in $site_3_0 -x 300 -y 90 -width 165 -relwidth 0 -height 52 \
         -relheight 0 -anchor nw -bordermode ignore 
     labelframe $top.lab53 \
         -foreground black -text {Adduct ions} -background {#d9d9d9} \
@@ -283,7 +297,7 @@ proc vTclWindow.top37 {base} {
         -in $site_3_0 -x 520 -y 150 -anchor nw -bordermode ignore 
     labelframe $top.lab63 \
         -foreground black -text {CID fragments} -background {#d9d9d9} \
-        -height 185 -highlightbackground {#d9d9d9} -highlightcolor black \
+        -height 125 -highlightbackground {#d9d9d9} -highlightcolor black \
         -width 700 
     vTcl:DefineAlias "$top.lab63" "Labelframe4" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab63
@@ -342,30 +356,31 @@ proc vTclWindow.top37 {base} {
         -highlightcolor black -justify left -text a-B -variable aBion 
     vTcl:DefineAlias "$site_3_0.che77" "Checkbutton31" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.che64 \
-        -in $site_3_0 -x 40 -y 50 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 40 -y 30 -anchor nw -bordermode ignore 
     place $site_3_0.che65 \
-        -in $site_3_0 -x 210 -y 50 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 210 -y 30 -anchor nw -bordermode ignore 
     place $site_3_0.che66 \
-        -in $site_3_0 -x 380 -y 50 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 380 -y 30 -anchor nw -bordermode ignore 
     place $site_3_0.che67 \
-        -in $site_3_0 -x 550 -y 50 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 550 -y 30 -anchor nw -bordermode ignore 
     place $site_3_0.che68 \
-        -in $site_3_0 -x 40 -y 110 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 40 -y 70 -width 48 -height 52 -anchor nw \
+        -bordermode ignore 
     place $site_3_0.che69 \
-        -in $site_3_0 -x 174 -y 110 -width 50 -height 52 -anchor nw \
+        -in $site_3_0 -x 174 -y 70 -width 50 -height 52 -anchor nw \
         -bordermode ignore 
     place $site_3_0.che70 \
-        -in $site_3_0 -x 311 -y 110 -width 46 -height 52 -anchor nw \
+        -in $site_3_0 -x 311 -y 70 -width 46 -height 52 -anchor nw \
         -bordermode ignore 
     place $site_3_0.che71 \
-        -in $site_3_0 -x 433 -y 110 -width 50 -height 52 -anchor nw \
+        -in $site_3_0 -x 433 -y 70 -width 50 -height 52 -anchor nw \
         -bordermode ignore 
     place $site_3_0.che77 \
-        -in $site_3_0 -x 551 -y 110 -width 105 -height 52 -anchor nw \
+        -in $site_3_0 -x 551 -y 70 -width 105 -height 52 -anchor nw \
         -bordermode ignore 
     labelframe $top.lab38 \
         -foreground black -text {Experimental file} -background {#d9d9d9} \
-        -height 785 -highlightbackground {#d9d9d9} -highlightcolor black \
+        -height 675 -highlightbackground {#d9d9d9} -highlightcolor black \
         -width 1850 
     vTcl:DefineAlias "$top.lab38" "Labelframe5" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab38
@@ -373,8 +388,8 @@ proc vTclWindow.top37 {base} {
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -command uploadfiles \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Upload files >>} 
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -pady 0 -text {Upload files >>} 
     vTcl:DefineAlias "$site_3_0.but39" "Button1" vTcl:WidgetProc "Toplevel1" 1
     bind $site_3_0.but39 <Button-1> {
         lambda e: xxx(e)
@@ -398,36 +413,38 @@ proc vTclWindow.top37 {base} {
         -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -command Read_mzMLfile \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Plot file >>} 
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -pady 0 -text {Plot file >>} 
     vTcl:DefineAlias "$site_3_0.but41" "Button2" vTcl:WidgetProc "Toplevel1" 1
     canvas $site_3_0.can69 \
-        -background white -borderwidth 2 -closeenough 1.0 -height 595 \
+        -background white -borderwidth 2 -closeenough 1.0 -height 473 \
         -highlightbackground {#d9d9d9} -highlightcolor black \
         -insertbackground black -relief ridge -selectbackground {#c4c4c4} \
-        -selectforeground black -width 850 
+        -selectforeground black -width 858 
     vTcl:DefineAlias "$site_3_0.can69" "Canvas1" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.but39 \
-        -in $site_3_0 -x 20 -y 50 -width 200 -height 60 -anchor nw \
-        -bordermode ignore 
+        -in $site_3_0 -x 20 -y 60 -width 200 -relwidth 0 -height 40 \
+        -relheight 0 -anchor nw -bordermode ignore 
     place $site_3_0.scr40 \
-        -in $site_3_0 -x 20 -y 140 -width 612 -relwidth 0 -height 604 \
+        -in $site_3_0 -x 20 -y 140 -width 612 -relwidth 0 -height 394 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $site_3_0.but41 \
-        -in $site_3_0 -x 670 -y 360 -width 170 -height 60 -anchor nw \
-        -bordermode ignore 
+        -in $site_3_0 -x 700 -y 290 -width 170 -relwidth 0 -height 40 \
+        -relheight 0 -anchor nw -bordermode ignore 
     place $site_3_0.can69 \
-        -in $site_3_0 -x 920 -y 120 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 940 -y 60 -width 858 -relwidth 0 -height 473 \
+        -relheight 0 -anchor nw -bordermode ignore 
     labelframe $top.lab65 \
         -foreground black -text Parameters -background {#d9d9d9} -height 135 \
-        -highlightbackground {#d9d9d9} -highlightcolor black -width 830 
+        -highlightbackground {#d9d9d9} -highlightcolor black -width 710 
     vTcl:DefineAlias "$top.lab65" "Labelframe6" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab65
     label $site_3_0.lab66 \
         -activebackground {#f9f9f9} -activeforeground black -anchor w \
         -background {#d9d9d9} -disabledforeground {#a3a3a3} \
         -foreground {#000000} -highlightbackground {#d9d9d9} \
-        -highlightcolor black -text {M/Z variation window (ppm)} 
+        -highlightcolor black -justify left \
+        -text {M/Z variation window (ppm)} 
     vTcl:DefineAlias "$site_3_0.lab66" "Label1" vTcl:WidgetProc "Toplevel1" 1
     entry $site_3_0.ent67 \
         -background white -disabledforeground {#a3a3a3} -font TkFixedFont \
@@ -436,7 +453,8 @@ proc vTclWindow.top37 {base} {
         -selectbackground {#c4c4c4} -selectforeground black 
     vTcl:DefineAlias "$site_3_0.ent67" "Entry1" vTcl:WidgetProc "Toplevel1" 1
     place $site_3_0.lab66 \
-        -in $site_3_0 -x 30 -y 50 -anchor nw -bordermode ignore 
+        -in $site_3_0 -x 30 -y 40 -width 354 -height 51 -anchor nw \
+        -bordermode ignore 
     place $site_3_0.ent67 \
         -in $site_3_0 -x 400 -y 50 -width 154 -relwidth 0 -height 51 \
         -relheight 0 -anchor nw -bordermode ignore 
@@ -444,8 +462,8 @@ proc vTclWindow.top37 {base} {
         -activebackground {#d9d9d9} -activeforeground {#000000} \
         -background {#d9d9d9} -command processdata \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text Process 
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -pady 0 -text Process 
     vTcl:DefineAlias "$top.but70" "Button3" vTcl:WidgetProc "Toplevel1" 1
     menu $top.m72 \
         -activebackground {#d8d8d8} -activeforeground {#000000} \
@@ -454,18 +472,18 @@ proc vTclWindow.top37 {base} {
     labelframe $top.lab73 \
         -foreground black -text {Enzyme selection} -background {#d9d9d9} \
         -height 95 -highlightbackground {#d9d9d9} -highlightcolor black \
-        -width 550 
+        -width 700 
     vTcl:DefineAlias "$top.lab73" "Labelframe7" vTcl:WidgetProc "Toplevel1" 1
     set site_3_0 $top.lab73
     radiobutton $site_3_0.rad74 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -disabledforeground {#a3a3a3} \
         -foreground {#000000} -highlightbackground {#d9d9d9} \
         -highlightcolor black -justify left -text T1 -value 1 \
         -variable T1_enzyme 
     vTcl:DefineAlias "$site_3_0.rad74" "Radiobutton3" vTcl:WidgetProc "Toplevel1" 1
     radiobutton $site_3_0.rad75 \
-        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
         -background {#d9d9d9} -disabledforeground {#a3a3a3} \
         -foreground {#000000} -highlightbackground {#d9d9d9} \
         -highlightcolor black -justify left -text A -value 2 \
@@ -477,12 +495,18 @@ proc vTclWindow.top37 {base} {
     place $site_3_0.rad75 \
         -in $site_3_0 -x 310 -y 37 -width 103 -height 52 -anchor nw \
         -bordermode ignore 
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr43 \
-        -background {#d9d9d9} -height 644 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 322 
-    vTcl:DefineAlias "$top.scr43" "Scrolledlistbox2" vTcl:WidgetProc "Toplevel1" 1
+    labelframe $top.lab49 \
+        -foreground black -text Modification -background {#d9d9d9} \
+        -height 395 -highlightbackground {#d9d9d9} -highlightcolor black \
+        -width 700 
+    vTcl:DefineAlias "$top.lab49" "Labelframe8" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab49
+    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $site_3_0.scr50 \
+        -background {#d9d9d9} -height 75 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 125 
+    vTcl:DefineAlias "$site_3_0.scr50" "Scrolledlistbox4" vTcl:WidgetProc "Toplevel1" 1
 
-    $top.scr43.01 configure -background white \
+    $site_3_0.scr50.01 configure -background white \
         -disabledforeground #a3a3a3 \
         -font TkFixedFont \
         -foreground black \
@@ -492,12 +516,12 @@ proc vTclWindow.top37 {base} {
         -selectbackground #c4c4c4 \
         -selectforeground black \
         -width 10
-    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $top.scr44 \
-        -background {#d9d9d9} -height 654 -highlightbackground {#d9d9d9} \
-        -highlightcolor black -width 302 
-    vTcl:DefineAlias "$top.scr44" "Scrolledlistbox3" vTcl:WidgetProc "Toplevel1" 1
+    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $site_3_0.scr51 \
+        -background {#d9d9d9} -height 75 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 125 
+    vTcl:DefineAlias "$site_3_0.scr51" "Scrolledlistbox5" vTcl:WidgetProc "Toplevel1" 1
 
-    $top.scr44.01 configure -background white \
+    $site_3_0.scr51.01 configure -background white \
         -disabledforeground #a3a3a3 \
         -font TkFixedFont \
         -foreground black \
@@ -507,58 +531,293 @@ proc vTclWindow.top37 {base} {
         -selectbackground #c4c4c4 \
         -selectforeground black \
         -width 10
-    button $top.but45 \
+    button $site_3_0.but53 \
         -activebackground {#d9d9d9} -activeforeground {#000000} \
         -background {#d9d9d9} -command selectmodification \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
-        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Select >>} 
-    vTcl:DefineAlias "$top.but45" "Button4" vTcl:WidgetProc "Toplevel1" 1
-    button $top.but46 \
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -pady 0 -text {Select >>} 
+    vTcl:DefineAlias "$site_3_0.but53" "Button4" vTcl:WidgetProc "Toplevel1" 1
+    button $site_3_0.but54 \
         -activebackground {#d9d9d9} -activeforeground {#000000} \
         -background {#d9d9d9} -command removemodification \
         -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -justify left \
+        -pady 0 -text {<< Remove} 
+    vTcl:DefineAlias "$site_3_0.but54" "Button5" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.scr50 \
+        -in $site_3_0 -x 20 -y 40 -width 202 -relwidth 0 -height 344 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.scr51 \
+        -in $site_3_0 -x 440 -y 40 -width 212 -relwidth 0 -height 344 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.but53 \
+        -in $site_3_0 -x 260 -y 110 -width 156 -relwidth 0 -height 43 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.but54 \
+        -in $site_3_0 -x 260 -y 240 -width 162 -relwidth 0 -height 43 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    labelframe $top.lab55 \
+        -foreground black -text {Base type} -background {#d9d9d9} -height 155 \
+        -highlightbackground {#d9d9d9} -highlightcolor black -width 700 
+    vTcl:DefineAlias "$top.lab55" "Labelframe9" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab55
+    checkbutton $site_3_0.che61 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text All -variable allbase 
+    vTcl:DefineAlias "$site_3_0.che61" "Checkbutton22" vTcl:WidgetProc "Toplevel1" 1
+    checkbutton $site_3_0.che62 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text Adenosines -variable ABase 
+    vTcl:DefineAlias "$site_3_0.che62" "Checkbutton23" vTcl:WidgetProc "Toplevel1" 1
+    checkbutton $site_3_0.che63 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text Cytidines -variable CBase 
+    vTcl:DefineAlias "$site_3_0.che63" "Checkbutton24" vTcl:WidgetProc "Toplevel1" 1
+    checkbutton $site_3_0.che64 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text Guanosines -variable GBase 
+    vTcl:DefineAlias "$site_3_0.che64" "Checkbutton25" vTcl:WidgetProc "Toplevel1" 1
+    checkbutton $site_3_0.che65 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text Uridines -variable UBase 
+    vTcl:DefineAlias "$site_3_0.che65" "Checkbutton32" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.che61 \
+        -in $site_3_0 -x 40 -y 40 -anchor nw -bordermode ignore 
+    place $site_3_0.che62 \
+        -in $site_3_0 -x 220 -y 40 -anchor nw -bordermode ignore 
+    place $site_3_0.che63 \
+        -in $site_3_0 -x 460 -y 40 -anchor nw -bordermode ignore 
+    place $site_3_0.che64 \
+        -in $site_3_0 -x 40 -y 92 -width 171 -height 52 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.che65 \
+        -in $site_3_0 -x 306 -y 88 -width 132 -height 52 -anchor nw \
+        -bordermode ignore 
+    labelframe $top.lab66 \
+        -foreground black -text {RNA Source} -background {#d9d9d9} \
+        -height 175 -highlightbackground {#d9d9d9} -highlightcolor black \
+        -width 700 
+    vTcl:DefineAlias "$top.lab66" "Labelframe10" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab66
+    radiobutton $site_3_0.rad67 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text tRNA -value 1 \
+        -variable tRNA 
+    vTcl:DefineAlias "$site_3_0.rad67" "Radiobutton5" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad68 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text rRNA -value 2 \
+        -variable rRNA 
+    vTcl:DefineAlias "$site_3_0.rad68" "Radiobutton6" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad69 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text mRNA -value 3 \
+        -variable mRNA 
+    vTcl:DefineAlias "$site_3_0.rad69" "Radiobutton7" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad70 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text tmRNA -value 4 \
+        -variable tmRNA 
+    vTcl:DefineAlias "$site_3_0.rad70" "Radiobutton8" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad71 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text snRNA -value 5 \
+        -variable snRNA 
+    vTcl:DefineAlias "$site_3_0.rad71" "Radiobutton9" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad72 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} -anchor w \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text {Chromosomal RNA} -value 6 \
+        -variable Chromosomal_RNA 
+    vTcl:DefineAlias "$site_3_0.rad72" "Radiobutton10" vTcl:WidgetProc "Toplevel1" 1
+    radiobutton $site_3_0.rad51 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -background {#d9d9d9} -disabledforeground {#a3a3a3} \
+        -foreground {#000000} -highlightbackground {#d9d9d9} \
+        -highlightcolor black -justify left -text None -value 7 \
+        -variable none_rna 
+    vTcl:DefineAlias "$site_3_0.rad51" "Radiobutton11" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.rad67 \
+        -in $site_3_0 -x 20 -y 50 -anchor nw -bordermode ignore 
+    place $site_3_0.rad68 \
+        -in $site_3_0 -x 180 -y 50 -anchor nw -bordermode ignore 
+    place $site_3_0.rad69 \
+        -in $site_3_0 -x 320 -y 50 -anchor nw -bordermode ignore 
+    place $site_3_0.rad70 \
+        -in $site_3_0 -x 470 -y 50 -anchor nw -bordermode ignore 
+    place $site_3_0.rad71 \
+        -in $site_3_0 -x 20 -y 106 -width 113 -height 52 -anchor nw \
+        -bordermode ignore 
+    place $site_3_0.rad72 \
+        -in $site_3_0 -x 180 -y 106 -anchor nw -bordermode ignore 
+    place $site_3_0.rad51 \
+        -in $site_3_0 -x 470 -y 106 -width 103 -height 52 -anchor nw \
+        -bordermode ignore 
+    labelframe $top.lab39 \
+        -foreground black -text {Identification results} \
+        -background {#d9d9d9} -height 905 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 830 
+    vTcl:DefineAlias "$top.lab39" "Labelframe11" vTcl:WidgetProc "Toplevel1" 1
+    labelframe $top.lab45 \
+        -foreground black -text {User defined RNA database} \
+        -background {#d9d9d9} -height 315 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 700 
+    vTcl:DefineAlias "$top.lab45" "Labelframe12" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab45
+    button $site_3_0.but46 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -background {#d9d9d9} -command upload_userdatabase \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
         -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
-        -text {Remove >>} 
-    vTcl:DefineAlias "$top.but46" "Button5" vTcl:WidgetProc "Toplevel1" 1
+        -text {Upload files >>} 
+    vTcl:DefineAlias "$site_3_0.but46" "Button7" vTcl:WidgetProc "Toplevel1" 1
+    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $site_3_0.scr47 \
+        -background {#d9d9d9} -height 75 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 125 
+    vTcl:DefineAlias "$site_3_0.scr47" "Scrolledlistbox3" vTcl:WidgetProc "Toplevel1" 1
+
+    $site_3_0.scr47.01 configure -background white \
+        -disabledforeground #a3a3a3 \
+        -font TkFixedFont \
+        -foreground black \
+        -height 3 \
+        -highlightbackground #d9d9d9 \
+        -highlightcolor #d9d9d9 \
+        -selectbackground #c4c4c4 \
+        -selectforeground black \
+        -width 10
+    vTcl::widgets::ttk::scrolledlistbox::CreateCmd $site_3_0.scr48 \
+        -background {#d9d9d9} -height 75 -highlightbackground {#d9d9d9} \
+        -highlightcolor black -width 125 
+    vTcl:DefineAlias "$site_3_0.scr48" "Scrolledlistbox6" vTcl:WidgetProc "Toplevel1" 1
+
+    $site_3_0.scr48.01 configure -background white \
+        -disabledforeground #a3a3a3 \
+        -font TkFixedFont \
+        -foreground black \
+        -height 3 \
+        -highlightbackground #d9d9d9 \
+        -highlightcolor #d9d9d9 \
+        -selectbackground #c4c4c4 \
+        -selectforeground black \
+        -width 10
+    button $site_3_0.but49 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -background {#d9d9d9} -command selectuserdatabase \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
+        -text {Select >>} 
+    vTcl:DefineAlias "$site_3_0.but49" "Button8" vTcl:WidgetProc "Toplevel1" 1
+    button $site_3_0.but50 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -background {#d9d9d9} -command removeuserdatabase \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
+        -text {<< Remove} 
+    vTcl:DefineAlias "$site_3_0.but50" "Button9" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.but46 \
+        -in $site_3_0 -x 20 -y 41 -width 182 -relwidth 0 -height 43 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.scr47 \
+        -in $site_3_0 -x 20 -y 90 -width 222 -relwidth 0 -height 204 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.scr48 \
+        -in $site_3_0 -x 430 -y 87 -width 222 -relwidth 0 -height 194 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.but49 \
+        -in $site_3_0 -x 270 -y 120 -width 146 -relwidth 0 -height 43 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $site_3_0.but50 \
+        -in $site_3_0 -x 270 -y 220 -width 152 -relwidth 0 -height 43 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    labelframe $top.lab37 \
+        -foreground black -text Labelframe -background {#d9d9d9} -height 905 \
+        -width 960 
+    vTcl:DefineAlias "$top.lab37" "Labelframe13" vTcl:WidgetProc "Toplevel1" 1
+    set site_3_0 $top.lab37
+    canvas $site_3_0.can38 \
+        -background white -borderwidth 2 -closeenough 1.0 -height 595 \
+        -insertbackground black -relief ridge -selectbackground {#c4c4c4} \
+        -selectforeground black -width 850 
+    vTcl:DefineAlias "$site_3_0.can38" "Canvas3" vTcl:WidgetProc "Toplevel1" 1
+    button $site_3_0.cpd39 \
+        -activebackground {#d9d9d9} -activeforeground {#000000} \
+        -background {#d9d9d9} -command editfigure \
+        -disabledforeground {#a3a3a3} -foreground {#000000} \
+        -highlightbackground {#d9d9d9} -highlightcolor black -pady 0 \
+        -text {Edit figure} 
+    vTcl:DefineAlias "$site_3_0.cpd39" "Button6" vTcl:WidgetProc "Toplevel1" 1
+    place $site_3_0.can38 \
+        -in $site_3_0 -x 40 -y 110 -anchor nw -bordermode ignore 
+    place $site_3_0.cpd39 \
+        -in $site_3_0 -x 330 -y 730 -width 185 -height 43 -anchor nw \
+        -bordermode inside 
     ###################
     # SETTING GEOMETRY
     ###################
     place $top.lab44 \
-        -in $top -x 130 -y 60 -width 540 -relwidth 0 -height 155 -relheight 0 \
+        -in $top -x 20 -y 1060 -width 700 -relwidth 0 -height 95 -relheight 0 \
         -anchor nw -bordermode ignore 
     place $top.lab48 \
-        -in $top -x 129 -y 220 -width 550 -relwidth 0 -height 165 \
-        -relheight 0 -anchor nw -bordermode ignore 
+        -in $top -x 20 -y 200 -width 700 -relwidth 0 -height 145 -relheight 0 \
+        -anchor nw -bordermode ignore 
     place $top.lab53 \
-        -in $top -x 130 -y 500 -width 700 -relwidth 0 -height 205 \
+        -in $top -x 20 -y 1160 -width 700 -relwidth 0 -height 205 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab63 \
-        -in $top -x 130 -y 710 -width 700 -relwidth 0 -height 185 \
-        -relheight 0 -anchor nw -bordermode ignore 
+        -in $top -x 20 -y 930 -width 700 -relwidth 0 -height 125 -relheight 0 \
+        -anchor nw -bordermode ignore 
     place $top.lab38 \
-        -in $top -x 110 -y 980 -width 1850 -relwidth 0 -height 785 \
+        -in $top -x 760 -y 170 -width 1850 -relwidth 0 -height 675 \
         -relheight 0 -anchor nw -bordermode ignore 
     place $top.lab65 \
-        -in $top -x 900 -y 750 -width 830 -relwidth 0 -height 135 \
-        -relheight 0 -anchor nw -bordermode ignore 
+        -in $top -x 760 -y 20 -width 710 -relwidth 0 -height 135 -relheight 0 \
+        -anchor nw -bordermode ignore 
     place $top.but70 \
-        -in $top -x 1720 -y 1780 -width 242 -relwidth 0 -height 83 \
-        -relheight 0 -anchor nw -bordermode ignore 
+        -in $top -x 781 -y 730 -width 142 -relwidth 0 -height 63 -relheight 0 \
+        -anchor nw -bordermode ignore 
     place $top.lab73 \
-        -in $top -x 130 -y 390 -width 550 -relwidth 0 -height 95 -relheight 0 \
+        -in $top -x 20 -y 830 -width 700 -relwidth 0 -height 95 -relheight 0 \
         -anchor nw -bordermode ignore 
-    place $top.scr43 \
-        -in $top -x 890 -y 80 -width 322 -relwidth 0 -height 644 -relheight 0 \
+    place $top.lab49 \
+        -in $top -x 20 -y 1370 -width 700 -relwidth 0 -height 395 \
+        -relheight 0 -anchor nw -bordermode ignore 
+    place $top.lab55 \
+        -in $top -x 20 -y 670 -width 700 -relwidth 0 -height 155 -relheight 0 \
         -anchor nw -bordermode ignore 
-    place $top.scr44 \
-        -in $top -x 1440 -y 80 -width 302 -relwidth 0 -height 654 \
+    place $top.lab66 \
+        -in $top -x 20 -y 20 -width 700 -relwidth 0 -height 175 -relheight 0 \
+        -anchor nw -bordermode ignore 
+    place $top.lab39 \
+        -in $top -x 770 -y 860 -width 830 -relwidth 0 -height 905 \
         -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but45 \
-        -in $top -x 1240 -y 260 -width 162 -relwidth 0 -height 63 \
-        -relheight 0 -anchor nw -bordermode ignore 
-    place $top.but46 \
-        -in $top -x 1240 -y 390 -width 162 -relwidth 0 -height 63 \
+    place $top.lab45 \
+        -in $top -x 20 -y 350 -width 700 -relwidth 0 -height 315 -relheight 0 \
+        -anchor nw -bordermode ignore 
+    place $top.lab37 \
+        -in $top -x 1660 -y 860 -width 960 -relwidth 0 -height 905 \
         -relheight 0 -anchor nw -bordermode ignore 
 
     vTcl:FireEvent $base <<Ready>>

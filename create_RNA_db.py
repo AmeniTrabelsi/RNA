@@ -2,12 +2,12 @@ import pymysql as mdb
 import replace_K_N
 import math
 
-print("get data from OriRNA Table")
+print("get data from tRNA_Ecoli Table")
 # fetch from RawRNA table, output values are ((RawRNAid, Name, Source, Sequence))
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("SELECT * FROM OriRNA")
+    cur.execute("SELECT * FROM Ori_tRNA_Ecoli")
     rawRNA_head = [i[0] for i in cur.description]
     rawRNA = cur.fetchall()
 print("RawRNA table head is {0}".format(rawRNA_head))
@@ -35,20 +35,20 @@ for raw_rna in rawRNA:
 print("write data to RNA table in RNAdb database")
 placeholders = ", ".join(["%s"] * len(head))
 columns = ", ".join(head)
-myQuery1 = "INSERT INTO RNA ( %s ) VALUES ( %s )" % (columns, placeholders)
-myQuery2 = "INSERT INTO RNA_large_KN ( %s ) VALUES ( %s )" % (columns, placeholders)
+myQuery1 = "INSERT INTO tRNA_Ecoli ( %s ) VALUES ( %s )" % (columns, placeholders)
+# myQuery2 = "INSERT INTO tRNA_large_KN_bacterial ( %s ) VALUES ( %s )" % (columns, placeholders)
 
 con = mdb.connect("localhost", "xiaoli", "shumaker344", "RNAdb")
 with con:
     cur = con.cursor()
-    cur.execute("DROP TABLE IF EXISTS RNA")
-    cur.execute("CREATE TABLE RNA(RNA_ID INT PRIMARY KEY AUTO_INCREMENT, \
+    cur.execute("DROP TABLE IF EXISTS tRNA_Ecoli")
+    cur.execute("CREATE TABLE tRNA_Ecoli(RNA_ID INT PRIMARY KEY AUTO_INCREMENT, \
                  OriRNA_ID INT, \
                  Sequence TEXT)")
-    cur.execute("DROP TABLE IF EXISTS RNA_large_KN")
-    cur.execute("CREATE TABLE RNA_large_KN(RNA_ID INT PRIMARY KEY AUTO_INCREMENT, \
-                 OriRNA_ID INT, \
-                 Sequence TEXT)")
+    # cur.execute("DROP TABLE IF EXISTS tRNA_large_KN_bacterial")
+    # cur.execute("CREATE TABLE tRNA_large_KN_bacterial(RNA_ID INT PRIMARY KEY AUTO_INCREMENT, \
+    #              OriRNA_ID INT, \
+    #              Sequence TEXT)")
     # #  store by batch
     batch = 200000
     batch_num = int(math.ceil(1.0 * len(data) / batch))
@@ -57,4 +57,4 @@ with con:
         cur.executemany(myQuery1, data[i * batch : (i + 1) * batch])
     # #  store all once if size is small
     # cur.executemany(myQuery, data)
-    cur.executemany(myQuery2, data_Large_KN)
+    # cur.executemany(myQuery2, data_Large_KN)
