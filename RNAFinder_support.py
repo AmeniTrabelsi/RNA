@@ -37,6 +37,7 @@ import webbrowser
 from tkinter import *
 from tkinter.ttk import *
 from Calculate_Spec_Sim import Calculate_Spec_Sim
+from mergespec import mergespec
 import collections
 from numpy import prod
 import itertools
@@ -472,7 +473,7 @@ def processdata():
         if start == no_base:
             temp_modi_mw = oligo_mw + sum([float(y[0]) for y in res])
             if abs(temp_modi_mw - temp_mw)/temp_mw <= mz_var * 10 ** -6:
-                all_modi_infor.append([res, temp_modi_mw])
+                all_modi_infor.append([copy.copy(res), temp_modi_mw])
             return
         for x in modi_base_mz_info[temp_no[start]]:
             res.append(x)
@@ -763,18 +764,19 @@ def processdata():
 
 ### modification_list
     modifi_list = getAllInListBox5()
-    modi_base_mz_info = collections.defaultdict(list)
-    for temp_modi in modifi_list:
-        temp_modi_infor = modification_info[temp_modi]
-        modi_mw = temp_modi_infor[2]
-        modi_base = temp_modi_infor[0]
-        if modi_base in modifi_base_set:
-            modi_base_mz_info[modi_base].append([modi_mw, temp_modi])
-    max_mw = collections.defaultdict(list)
-    for modi_base in modi_base_mz_info:
-        modi_base_mz_info[modi_base].append([0, 'None'])
-        temp_value = modi_base_mz_info[modi_base]
-        max_mw[modi_base] = max([float(x[0]) for x in temp_value])
+    if modifi_list:
+        modi_base_mz_info = collections.defaultdict(list)
+        for temp_modi in modifi_list:
+            temp_modi_infor = modification_info[temp_modi]
+            modi_mw = temp_modi_infor[2]
+            modi_base = temp_modi_infor[0]
+            if modi_base in modifi_base_set:
+                modi_base_mz_info[modi_base].append([modi_mw, temp_modi])
+        max_mw = collections.defaultdict(list)
+        for modi_base in modi_base_mz_info:
+            modi_base_mz_info[modi_base].append([0, 'None'])
+            temp_value = modi_base_mz_info[modi_base]
+            max_mw[modi_base] = max([float(x[0]) for x in temp_value])
     # modi_base_combin_info = collections.defaultdict(list)
     # for modi_base in modi_base_mz_info:
     #     temp_value = modi_base_mz_info[modi_base]
@@ -971,13 +973,17 @@ def processdata():
         idx += 1
 
     mz_var = int(w.Entry1.get())
-    parent_mz = msmsSpectra['parent_mz']
+    ####merge msms spectra
+    ori_parent_sn = msmsSpectra['parent_sn']
+    ori_parent_mz = msmsSpectra['parent_mz']
+    ori_parent_rt = msmsSpectra['parent_rt']
+    parent_mz, parent_sn, parent_rt = mergespec(ori_parent_mz, ori_parent_sn, ori_parent_rt)
     total_num_data = len(parent_mz)
     output_infor = [] ##parent_mz, parent_MW, parent_rt, similarity score, Annotate_ID, spec_mz, spec_intensityMtx
     theta_mz_charge = 0.003
     for idx, mz in enumerate(parent_mz):
-        if idx % 1000 == 0:
-            print("processing data at {0}%".format(100.0 * idx / total_num_data))
+        if idx % 2 == 0:
+            print("processing data {0} at {1}%".format(idx, 100.0 * idx / total_num_data))
         temp_sn = msmsSpectra['parent_sn'][idx]
         temp_rt = msmsSpectra['parent_rt'][idx]
         temp_msspec = fullmsSpectra['Spectra'][fullmsSpectra['sn'].index(temp_sn)] # get the ms spectrum
@@ -1029,337 +1035,345 @@ def processdata():
                         left -= 1
 
             if charge:
-                # caculate the therotical fragment ions with modification
-                for add_ion in adduct_set:
-                    temp_mw = temp_idx[0][1] * charge - charge * adduct_ions[add_ion][0]
-                    with con:
-                        cur = con.cursor()
-                        uper_bound = temp_mw * (1 + mz_var * 10 ** -6)
-                        # query to get mz vs #sequence
-                        cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW <= {0}".format(uper_bound))
-                        temp_info1 = cur.fetchall()
-                    if temp_info1:
-                        for line1 in temp_info1:
-                            all_fragmention = []
-                            target_spec = []
-                            all_modi_infor = []
-                            oligo_id = line1[0]
-                            oligo_seq = line1[1]
-                            oligo_type = line1[2]
-                            oligo_mw = float(line1[3])
-                            if oligo_mw + sum([max_mw[x] for x in oligo_seq]) >= temp_mw(1 - mz_var * 10 ** -6):
-                                no_base = len(oligo_seq)
-                                # modi_base_mz_info
-                                temp_no = [x for x in oligo_seq]
-                                res = []
-                                start = 0
-                                dfs(temp_no, start, res)
-                                if all_modi_infor:
-                                    for infor1 in all_modi_infor:
-                                        temp_modi_infor = infor1[0]
-                                        for i, temp_letter in enumerate(oligo_seq):
-                                            if i != no_base - 1:
-                                                for j in fragion_set:
-                                                    if fragion_set[j] == 1:
-                                                        temp_fragion = j + str(i + 1)
-                                                        temp1 = oligo_seq[:i + 1]
-                                                        no_a = temp1.count('A')
-                                                        no_u = temp1.count('U')
-                                                        no_g = temp1.count('G')
-                                                        no_c = temp1.count('C')
-                                                        total_no = len(temp1)
-                                                        common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * \
-                                                                                                                                                     iso_map['H'][0]
-                                                        if j == 'a':
-                                                            #########phosphate group
-                                                            if oligo_type == '5Prime':
-                                                                temp_mz = common_mz + iso_map['H'][0]
-                                                            else:
-                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '5Prime':
-                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-                                                        elif j == 'b':
-                                                            #########phosphate group
-                                                            if oligo_type == '5Prime':
-                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                            else:
-                                                                temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '5Prime':
-                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-                                                        elif j == 'c':
-                                                            #########phosphate group
-                                                            if oligo_type == '5Prime':
-                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-                                                            else:
-                                                                temp_mz = common_mz + iso_map['H'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '5Prime':
-                                                                #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + iso_map['H'][0]
-                                                        elif j == 'd':
-                                                            #########phosphate group
-                                                            if oligo_type == '5Prime':
-                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
-                                                            else:
-                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '5Prime':
-                                                                #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                        elif j == 'a-B':
-                                                            letterB = temp1[-1]
-                                                            if letterB == 'A':
-                                                                mz_B = mz_A
-                                                            elif letterB == 'U':
-                                                                mz_B = mz_U
-                                                            elif letterB == 'G':
-                                                                mz_B = mz_G
-                                                            elif letterB == 'C':
-                                                                mz_B = mz_C
-                                                            #########phosphate group
-                                                            if oligo_type == '5Prime':
-                                                                temp_mz = common_mz + iso_map['H'][0] - mz_B
-                                                            else:
-                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
-                                                                #########OH group
-                                                                # if oligo_type == '5Prime':
-                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
-                                                                # else:
-                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
-                                                    elif fragion_set[j] == 2:
-                                                        temp_fragion = j + str(no_base - i - 1)
-                                                        temp1 = oligo_seq[i + 1:]
-                                                        no_a = temp1.count('A')
-                                                        no_u = temp1.count('U')
-                                                        no_g = temp1.count('G')
-                                                        no_c = temp1.count('C')
-                                                        total_no = len(temp1)
-                                                        common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
-                                                        if j == 'w':
-                                                            #########phosphate group
-                                                            if oligo_type == '3Prime':
-                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                            else:
-                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '3Prime':
-                                                                #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-                                                        elif j == 'x':
-                                                            #########phosphate group
-                                                            if oligo_type == '3Prime':
-                                                                temp_mz = common_mz + iso_map['H'][0]
-                                                            else:
-                                                                temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '3Prime':
-                                                                #     temp_mz = common_mz + iso_map['H'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
-                                                        elif j == 'y':
-                                                            #########phosphate group
-                                                            if oligo_type == '3Prime':
-                                                                temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-                                                            else:
-                                                                temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '3Prime':
-                                                                #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + iso_map['H'][0]
-                                                        elif j == 'z':
-                                                            #########phosphate group
-                                                            if oligo_type == '3Prime':
-                                                                temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-                                                            else:
-                                                                temp_mz = common_mz + iso_map['H'][0]
-                                                                #########OH group
-                                                                # if oligo_type == '3Prime':
-                                                                #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-                                                                # else:
-                                                                #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
-                                                    temp_ion = oligo_seq + '_' + temp_fragion
-                                                    for add_ion1 in adduct_set:
-                                                        temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
-                                                        all_fragmention.append(
-                                                            [oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion,
-                                                             adduct_ions[add_ion][1], temp_adduct_mz])
-                                                        target_spec.append([temp_adduct_mz, 1])
-                                                        # caculate the spectrum similarity
+                if modifi_list:
+                    # caculate the therotical fragment ions with modification
+                    for add_ion in adduct_set:
+                        temp_mw = temp_idx[0][1] * charge - charge * adduct_ions[add_ion][0]
+                        max_true_mz = temp_idx[0][1] * charge - adduct_ions[add_ion][0]
+                        with con:
+                            cur = con.cursor()
+                            uper_bound = temp_mw * (1 + mz_var * 10 ** -6)
+                            # query to get mz vs #sequence
+                            cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW <= {0}".format(uper_bound))
+                            temp_info1 = cur.fetchall()
+                        if temp_info1:
+                            for line1 in temp_info1:
+                                all_fragmention = []
+                                target_spec = []
+                                all_modi_infor = []
+                                oligo_id = line1[0]
+                                oligo_seq = line1[1]
+                                oligo_type = line1[2]
+                                oligo_mw = float(line1[3])
+                                if oligo_mw + sum([max_mw[x] for x in oligo_seq]) >= temp_mw * (1 - mz_var * 10 ** -6):
+                                    no_base = len(oligo_seq)
+                                    # modi_base_mz_info
+                                    temp_no = [x for x in oligo_seq]
+                                    res = []
+                                    start = 0
+                                    dfs(temp_no, start, res)
+                                    if all_modi_infor:
+                                        for infor1 in all_modi_infor:
+                                            temp_1 = infor1[0]
+                                            modi_infor = [y[-1] for y in temp_1]
+                                            for i, temp_letter in enumerate(oligo_seq):
+                                                if i != no_base - 1:
+                                                    for j in fragion_set:
+                                                        if fragion_set[j] == 1:
+                                                            temp_fragion = j + str(i + 1)
+                                                            temp1 = oligo_seq[:i + 1]
+                                                            modi_mz = [y[0] for y in temp_1[i + 1:]]
+                                                            no_a = temp1.count('A')
+                                                            no_u = temp1.count('U')
+                                                            no_g = temp1.count('G')
+                                                            no_c = temp1.count('C')
+                                                            total_no = len(temp1)
+                                                            common_mz = sum(modi_mz) + total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * \
+                                                                                                                                                         iso_map['H'][0]
+                                                            if j == 'a':
+                                                                #########phosphate group
+                                                                if oligo_type == '5Prime':
+                                                                    temp_mz = common_mz + iso_map['H'][0]
+                                                                else:
+                                                                    temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '5Prime':
+                                                                    #     temp_mz = common_mz + 2 * iso_map['H'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                            elif j == 'b':
+                                                                #########phosphate group
+                                                                if oligo_type == '5Prime':
+                                                                    temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                else:
+                                                                    temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '5Prime':
+                                                                    #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                            elif j == 'c':
+                                                                #########phosphate group
+                                                                if oligo_type == '5Prime':
+                                                                    temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + iso_map['H'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '5Prime':
+                                                                    #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + iso_map['H'][0]
+                                                            elif j == 'd':
+                                                                #########phosphate group
+                                                                if oligo_type == '5Prime':
+                                                                    temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '5Prime':
+                                                                    #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                            elif j == 'a-B':
+                                                                letterB = temp1[-1]
+                                                                if letterB == 'A':
+                                                                    mz_B = mz_A
+                                                                elif letterB == 'U':
+                                                                    mz_B = mz_U
+                                                                elif letterB == 'G':
+                                                                    mz_B = mz_G
+                                                                elif letterB == 'C':
+                                                                    mz_B = mz_C
+                                                                #########phosphate group
+                                                                if oligo_type == '5Prime':
+                                                                    temp_mz = common_mz + iso_map['H'][0] - mz_B
+                                                                else:
+                                                                    temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                                                    #########OH group
+                                                                    # if oligo_type == '5Prime':
+                                                                    #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+                                                                    # else:
+                                                                    #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                                        elif fragion_set[j] == 2:
+                                                            temp_fragion = j + str(no_base - i - 1)
+                                                            temp1 = oligo_seq[i + 1:]
+                                                            modi_mz = [y[0] for y in temp_1[i + 1:]]
+                                                            no_a = temp1.count('A')
+                                                            no_u = temp1.count('U')
+                                                            no_g = temp1.count('G')
+                                                            no_c = temp1.count('C')
+                                                            total_no = len(temp1)
+                                                            common_mz = sum(modi_mz) + total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+                                                            if j == 'w':
+                                                                #########phosphate group
+                                                                if oligo_type == '3Prime':
+                                                                    temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '3Prime':
+                                                                    #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                            elif j == 'x':
+                                                                #########phosphate group
+                                                                if oligo_type == '3Prime':
+                                                                    temp_mz = common_mz + iso_map['H'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '3Prime':
+                                                                    #     temp_mz = common_mz + iso_map['H'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
+                                                            elif j == 'y':
+                                                                #########phosphate group
+                                                                if oligo_type == '3Prime':
+                                                                    temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '3Prime':
+                                                                    #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + iso_map['H'][0]
+                                                            elif j == 'z':
+                                                                #########phosphate group
+                                                                if oligo_type == '3Prime':
+                                                                    temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                                else:
+                                                                    temp_mz = common_mz + iso_map['H'][0]
+                                                                    #########OH group
+                                                                    # if oligo_type == '3Prime':
+                                                                    #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                                    # else:
+                                                                    #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                                                        temp_ion = oligo_seq + '_' + temp_fragion
+                                                        for add_ion1 in adduct_set:
+                                                            temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
+                                                            all_fragmention.append([oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion, adduct_ions[add_ion][1], temp_adduct_mz])
+                                                            target_spec.append([temp_adduct_mz, 1])
+                                                            # caculate the spectrum similarity
+                                            if target_spec:
+                                                test_spec = msmsSpectra['Spectra'][idx] # get the msms spectrum
+                                                SimScore, Annotate_ID, mzSort, intensityMtx, count_nonemptyID = Calculate_Spec_Sim(all_fragmention, target_spec, test_spec, max_true_mz)
+                                                output_infor.append([temp_idx[0][1], temp_mw, temp_rt, SimScore, Annotate_ID, count_nonemptyID, mzSort, intensityMtx, oligo_id, oligo_seq, oligo_type, modi_infor, all_fragmention])
 
-                        break
-                # caculate the therotical fragment ions without modification
-    #             for add_ion in adduct_set:
-    #                 temp_mw = temp_idx[0][1]*charge - charge*adduct_ions[add_ion][0]
-    #                 max_true_mz = temp_idx[0][1]*charge - adduct_ions[add_ion][0]
-    #                 with con:
-    #                     cur = con.cursor()
-    #                     lower_bound = temp_mw * (1 - mz_var*10**-6)
-    #                     uper_bound = temp_mw * (1 + mz_var*10**-6)
-    #                     # query to get mz vs #sequence
-    #                     cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW >= {0} and MW <= {1}".format(lower_bound, uper_bound))
-    #                     temp_info = cur.fetchall()
-    #                 if temp_info:
-    #                     for line in temp_info:
-    #                         all_fragmention = []
-    #                         target_spec = []
-    #                         oligo_id = line[0]
-    #                         oligo_seq = line[1]
-    #                         oligo_type = line[2]
-    #                         no_base = len(oligo_seq)
-    #                         for i, temp_letter in enumerate(oligo_seq):
-    #                             if i != no_base - 1:
-    #                                 for j in fragion_set:
-    #                                     if fragion_set[j] == 1:
-    #                                         temp_fragion = j + str(i + 1)
-    #                                         temp1 = oligo_seq[:i + 1]
-    #                                         no_a = temp1.count('A')
-    #                                         no_u = temp1.count('U')
-    #                                         no_g = temp1.count('G')
-    #                                         no_c = temp1.count('C')
-    #                                         total_no = len(temp1)
-    #                                         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
-    #                                         if j == 'a':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '5Prime':
-    #                                                 temp_mz = common_mz + iso_map['H'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '5Prime':
-    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-    #                                         elif j == 'b':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '5Prime':
-    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '5Prime':
-    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-    #                                         elif j == 'c':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '5Prime':
-    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
-    #                                                           iso_map['P'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + iso_map['H'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '5Prime':
-    #                                                 #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
-    #                                         elif j == 'd':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '5Prime':
-    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
-    #                                                           iso_map['P'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '5Prime':
-    #                                                 #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                         elif j == 'a-B':
-    #                                             letterB = temp1[-1]
-    #                                             if letterB == 'A':
-    #                                                 mz_B = mz_A
-    #                                             elif letterB == 'U':
-    #                                                 mz_B = mz_U
-    #                                             elif letterB == 'G':
-    #                                                 mz_B = mz_G
-    #                                             elif letterB == 'C':
-    #                                                 mz_B = mz_C
-    #                                             #########phosphate group
-    #                                             if oligo_type == '5Prime':
-    #                                                 temp_mz = common_mz + iso_map['H'][0] - mz_B
-    #                                             else:
-    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '5Prime':
-    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
-    #                                     elif fragion_set[j] == 2:
-    #                                         temp_fragion = j + str(no_base - i - 1)
-    #                                         temp1 = oligo_seq[i + 1:]
-    #                                         no_a = temp1.count('A')
-    #                                         no_u = temp1.count('U')
-    #                                         no_g = temp1.count('G')
-    #                                         no_c = temp1.count('C')
-    #                                         total_no = len(temp1)
-    #                                         common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
-    #                                         if j == 'w':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '3Prime':
-    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
-    #                                                           iso_map['P'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '3Prime':
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
-    #                                         elif j == 'x':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '3Prime':
-    #                                                 temp_mz = common_mz + iso_map['H'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
-    #                                                           iso_map['P'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '3Prime':
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
-    #                                         elif j == 'y':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '3Prime':
-    #                                                 temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '3Prime':
-    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0]
-    #                                         elif j == 'z':
-    #                                             #########phosphate group
-    #                                             if oligo_type == '3Prime':
-    #                                                 temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-    #                                             else:
-    #                                                 temp_mz = common_mz + iso_map['H'][0]
-    #                                                 #########OH group
-    #                                                 # if oligo_type == '3Prime':
-    #                                                 #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
-    #                                                 # else:
-    #                                                 #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
-    #                                     temp_ion = oligo_seq + '_' + temp_fragion
-    #                                     for add_ion1 in adduct_set:
-    #                                         temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
-    #                                         all_fragmention.append([oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion, adduct_ions[add_ion][1], temp_adduct_mz])
-    #                                         target_spec.append([temp_adduct_mz, 1])
-    #                                     # caculate the spectrum similarity
-    #                         if target_spec:
-    #                             test_spec = msmsSpectra['Spectra'][idx] # get the msms spectrum
-    #                             SimScore, Annotate_ID, mzSort, intensityMtx, count_nonemptyID = Calculate_Spec_Sim(all_fragmention, target_spec, test_spec, max_true_mz)
-    #                             output_infor.append([temp_idx[0][1], temp_mw, temp_rt, SimScore, Annotate_ID, count_nonemptyID, mzSort, intensityMtx, oligo_id, oligo_seq, oligo_type, all_fragmention])
-    #                     break
+                            break
+                else:
+                    # caculate the therotical fragment ions without modification
+                    for add_ion in adduct_set:
+                        temp_mw = temp_idx[0][1]*charge - charge*adduct_ions[add_ion][0]
+                        max_true_mz = temp_idx[0][1]*charge - adduct_ions[add_ion][0]
+                        with con:
+                            cur = con.cursor()
+                            lower_bound = temp_mw * (1 - mz_var*10**-6)
+                            uper_bound = temp_mw * (1 + mz_var*10**-6)
+                            # query to get mz vs #sequence
+                            cur.execute("select * from tRNA_UniOligos_Ecoli_T1 where MW >= {0} and MW <= {1}".format(lower_bound, uper_bound))
+                            temp_info = cur.fetchall()
+                        if temp_info:
+                            for line in temp_info:
+                                all_fragmention = []
+                                target_spec = []
+                                oligo_id = line[0]
+                                oligo_seq = line[1]
+                                oligo_type = line[2]
+                                no_base = len(oligo_seq)
+                                for i, temp_letter in enumerate(oligo_seq):
+                                    if i != no_base - 1:
+                                        for j in fragion_set:
+                                            if fragion_set[j] == 1:
+                                                temp_fragion = j + str(i + 1)
+                                                temp1 = oligo_seq[:i + 1]
+                                                no_a = temp1.count('A')
+                                                no_u = temp1.count('U')
+                                                no_g = temp1.count('G')
+                                                no_c = temp1.count('C')
+                                                total_no = len(temp1)
+                                                common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+                                                if j == 'a':
+                                                    #########phosphate group
+                                                    if oligo_type == '5Prime':
+                                                        temp_mz = common_mz + iso_map['H'][0]
+                                                    else:
+                                                        temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '5Prime':
+                                                        #     temp_mz = common_mz + 2 * iso_map['H'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                elif j == 'b':
+                                                    #########phosphate group
+                                                    if oligo_type == '5Prime':
+                                                        temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                    else:
+                                                        temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '5Prime':
+                                                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + iso_map['O'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                elif j == 'c':
+                                                    #########phosphate group
+                                                    if oligo_type == '5Prime':
+                                                        temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
+                                                                  iso_map['P'][0]
+                                                    else:
+                                                        temp_mz = common_mz + iso_map['H'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '5Prime':
+                                                        #     temp_mz = common_mz + 3 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + iso_map['H'][0]
+                                                elif j == 'd':
+                                                    #########phosphate group
+                                                    if oligo_type == '5Prime':
+                                                        temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
+                                                                  iso_map['P'][0]
+                                                    else:
+                                                        temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '5Prime':
+                                                        #     temp_mz = common_mz + 3 * iso_map['H'][0] + 4 * iso_map['O'][0] + iso_map['P'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                elif j == 'a-B':
+                                                    letterB = temp1[-1]
+                                                    if letterB == 'A':
+                                                        mz_B = mz_A
+                                                    elif letterB == 'U':
+                                                        mz_B = mz_U
+                                                    elif letterB == 'G':
+                                                        mz_B = mz_G
+                                                    elif letterB == 'C':
+                                                        mz_B = mz_C
+                                                    #########phosphate group
+                                                    if oligo_type == '5Prime':
+                                                        temp_mz = common_mz + iso_map['H'][0] - mz_B
+                                                    else:
+                                                        temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                                        #########OH group
+                                                        # if oligo_type == '5Prime':
+                                                        #     temp_mz = common_mz + 2 * iso_map['H'][0] - mz_B
+                                                        # else:
+                                                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0] - mz_B
+                                            elif fragion_set[j] == 2:
+                                                temp_fragion = j + str(no_base - i - 1)
+                                                temp1 = oligo_seq[i + 1:]
+                                                no_a = temp1.count('A')
+                                                no_u = temp1.count('U')
+                                                no_g = temp1.count('G')
+                                                no_c = temp1.count('C')
+                                                total_no = len(temp1)
+                                                common_mz = total_no * mz_constant + mz_A * no_a + mz_U * no_u + mz_G * no_g + mz_C * no_c - total_no * iso_map['H'][0]
+                                                if j == 'w':
+                                                    #########phosphate group
+                                                    if oligo_type == '3Prime':
+                                                        temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                    else:
+                                                        temp_mz = common_mz + 2 * iso_map['H'][0] + 4 * iso_map['O'][0] + \
+                                                                  iso_map['P'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '3Prime':
+                                                        #     temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + iso_map['P'][0]
+                                                elif j == 'x':
+                                                    #########phosphate group
+                                                    if oligo_type == '3Prime':
+                                                        temp_mz = common_mz + iso_map['H'][0]
+                                                    else:
+                                                        temp_mz = common_mz + 2 * iso_map['H'][0] + 3 * iso_map['O'][0] + \
+                                                                  iso_map['P'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '3Prime':
+                                                        #     temp_mz = common_mz + iso_map['H'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + 2 * iso_map['H'][0] + 2 * iso_map['O'][0] + iso_map['P'][0]
+                                                elif j == 'y':
+                                                    #########phosphate group
+                                                    if oligo_type == '3Prime':
+                                                        temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                    else:
+                                                        temp_mz = common_mz + iso_map['H'][0] + iso_map['O'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '3Prime':
+                                                        #     temp_mz = common_mz - iso_map['P'][0] - 2 * iso_map['O'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + iso_map['H'][0]
+                                                elif j == 'z':
+                                                    #########phosphate group
+                                                    if oligo_type == '3Prime':
+                                                        temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                    else:
+                                                        temp_mz = common_mz + iso_map['H'][0]
+                                                        #########OH group
+                                                        # if oligo_type == '3Prime':
+                                                        #     temp_mz = common_mz - iso_map['P'][0] - 3 * iso_map['O'][0]
+                                                        # else:
+                                                        #     temp_mz = common_mz + iso_map['H'][0] - iso_map['O'][0]
+                                            temp_ion = oligo_seq + '_' + temp_fragion
+                                            for add_ion1 in adduct_set:
+                                                temp_adduct_mz = temp_mz + charge * adduct_ions[add_ion1][0]
+                                                all_fragmention.append([oligo_id, oligo_seq, oligo_type, temp_ion, temp_fragion, add_ion, adduct_ions[add_ion][1], temp_adduct_mz])
+                                                target_spec.append([temp_adduct_mz, 1])
+                                            # caculate the spectrum similarity
+                                if target_spec:
+                                    test_spec = msmsSpectra['Spectra'][idx] # get the msms spectrum
+                                    SimScore, Annotate_ID, mzSort, intensityMtx, count_nonemptyID = Calculate_Spec_Sim(all_fragmention, target_spec, test_spec, max_true_mz)
+                                    output_infor.append([temp_idx[0][1], temp_mw, temp_rt, SimScore, Annotate_ID, count_nonemptyID, mzSort, intensityMtx, oligo_id, oligo_seq, oligo_type, all_fragmention])
+                            break
     if output_infor:
         #w.Scrolledlistbox2.insert('end', ['m/z', 'MW', 'Retention time', 'Similarity score', 'Oligo_seq', 'Oligo_type'])
         tbl.CreateUI(['m/z', 'MW', 'Retention time', 'Similarity score', 'Oligo_seq', 'Oligo_type'])

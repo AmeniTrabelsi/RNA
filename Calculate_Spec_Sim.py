@@ -75,6 +75,6 @@ def GetSimScore(intensityMtx, all_mz, n=0.53, m=1.3):
     # a = expdata.shape[0]
     newExpdata = expdata ** n * all_mz ** m
     newLibdata = libdata ** n * all_mz ** m
-    SimScore = np.dot(normr(newExpdata), normr(newLibdata).T)[0, 0]
+    SimScore = np.dot(normr(newExpdata.reshape((-1, 1))), normr(newLibdata.reshape((-1, 1))).T)[0, 0]
 
     return SimScore
